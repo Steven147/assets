@@ -1,0 +1,15 @@
+{
+  "name": "example_island",
+  "map": [
+    "SSSSSSSSSS",
+    "SGSSGGGGSS",
+    "SGGSGGGGSS",
+    "SSSGGOGGOS",
+    "SSSGOORrOS",
+    "SSSGGOGGOS",
+    "SSSGGOGGOS",
+    "SSSOGGOGSS",
+    "SSSGGGGGSS",
+    "SSSSSSSSSS"
+  ]
+}

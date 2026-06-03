@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Assets Catalog</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1a1a2e; color: #e0e0e0; padding: 20px; }
+  h1 { text-align: center; color: #e94560; margin-bottom: 10px; }
+  .subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 25px; }
+  .toolbar { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .toolbar button {
+    background: #0f3460; color: #e94560; border: 1px solid #e94560; padding: 8px 20px;
+    border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;
+    transition: all 0.2s;
+  }
+  .toolbar button:hover { background: #e94560; color: #fff; }
+  h2 {
+    color: #0f3460; background: #e94560; padding: 10px 20px; border-radius: 8px;
+    margin: 25px 0 15px; display: flex; justify-content: space-between; align-items: center;
+  }
+  h2 .count { font-size: 13px; opacity: 0.8; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .card {
+    background: #16213e; border-radius: 12px; overflow: hidden;
+    border: 1px solid #0f3460; transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(233,69,96,0.15); }
+  .card img {
+    width: 100%; height: 120px; object-fit: contain; background: #0a0a1a;
+    padding: 8px; display: block; cursor: zoom-in;
+  }
+  .card .info { padding: 10px 14px; }
+  .card .filename {
+    font-size: 12px; color: #6a9fb5; word-break: break-all; margin-bottom: 6px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .card .desc-edit {
+    width: 100%; min-height: 36px; padding: 6px 8px; font-size: 13px; color: #ccc;
+    background: #0d1b2a; border: 1px solid #1b3a5c; border-radius: 6px;
+    line-height: 1.4; resize: vertical; font-family: inherit;
+  }
+  .card .desc-edit:focus { outline: none; border-color: #e94560; }
+  .badge {
+    display: inline-block; background: #0f3460; color: #e94560; padding: 2px 8px;
+    border-radius: 4px; font-size: 11px; font-weight: bold; margin-bottom: 6px;
+  }
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: #16213e; color: #4ade80; border: 1px solid #4ade80;
+    padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600;
+    opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<h1>🎮 Game Assets Catalog</h1>
+<p class="subtitle">Click description to edit · Click image to zoom · Click Save to export JSON</p>
+<div class="toolbar">
+  <button onclick="saveJson()">💾 Save to JSON</button>
+  <button onclick="importJson()">📂 Import JSON</button>
+  <input type="file" id="jsonFileInput" accept=".json" style="display:none">
+</div>
+<div id="catalog"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// Embedded data from assets_map.json
+const INITIAL_DATA = [{"file": "/Users/lsq/env/assets/game/char_05_764x69_869x256.png", "description": "Red-armored warrior in dynamic attack pose with large weapon, red and gold armor with horned helmet"}, {"file": "/Users/lsq/env/assets/game/char_06_892x68_997x256.png", "description": "Blue-armored knight/paladin in combat stance with shield, ornate blue and silver armor with cape"}, {"file": "/Users/lsq/env/assets/game/char_12_842x325_953x500.png", "description": "Green-cloaked ranger/mage in spellcasting pose, flowing green robes with nature-themed decorations"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Preview.png", "description": "Preview of pixel-art space shooter game with spaceship, starfield, asteroids and enemy ships"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Sample.png", "description": "Sample sprite sheet grid showcasing ships, enemies, asteroids, projectiles, explosions and UI elements"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0000.png", "description": "Small blue fighter ship facing up, pointed nose, delta wing shape"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0001.png", "description": "Small green fighter ship facing up, pointed nose, delta wing shape"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0002.png", "description": "Small red fighter ship facing up, pointed nose, delta wing shape"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0003.png", "description": "Small yellow fighter ship facing up, pointed nose, delta wing shape"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0004.png", "description": "Medium blue fighter ship facing up, wider body with swept wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0005.png", "description": "Medium green fighter ship facing up, wider body with swept wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0006.png", "description": "Medium red fighter ship facing up, wider body with swept wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0007.png", "description": "Medium yellow fighter ship facing up, wider body with swept wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0008.png", "description": "Large blue cruiser ship facing up, broad body with extended wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0009.png", "description": "Large green cruiser ship facing up, broad body with extended wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0010.png", "description": "Large red cruiser ship facing up, broad body with extended wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0011.png", "description": "Large yellow cruiser ship facing up, broad body with extended wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0012.png", "description": "Small blue fighter ship facing down, pointed nose, delta wing shape"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0013.png", "description": "Small green fighter ship facing down, pointed nose, delta wing shape"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0014.png", "description": "Small red fighter ship facing down, pointed nose, delta wing shape"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0015.png", "description": "Small yellow fighter ship facing down, pointed nose, delta wing shape"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0016.png", "description": "Medium blue fighter ship facing down, wider body with swept wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0017.png", "description": "Medium green fighter ship facing down, wider body with swept wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0018.png", "description": "Medium red fighter ship facing down, wider body with swept wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0019.png", "description": "Medium yellow fighter ship facing down, wider body with swept wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0020.png", "description": "Large blue cruiser ship facing down, broad body with extended wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0021.png", "description": "Large green cruiser ship facing down, broad body with extended wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0022.png", "description": "Large red cruiser ship facing down, broad body with extended wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0023.png", "description": "Large yellow cruiser ship facing down, broad body with extended wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0000.png", "description": "Small pixel star or sparkle dot"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0001.png", "description": "Small upward-pointing player bullet"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0002.png", "description": "Small upward-pointing player bullet variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0003.png", "description": "Wider upward-pointing player bullet"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0004.png", "description": "Small pixel explosion spark"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0005.png", "description": "Small downward enemy bullet"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0006.png", "description": "Small pixel projectile"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0007.png", "description": "Tiny pixel dot projectile"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0008.png", "description": "Small bright pixel spark"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0009.png", "description": "Tiny pixel particle"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0010.png", "description": "Small pixel bullet or spark"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0011.png", "description": "Small pixel bullet variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0012.png", "description": "Pixel star or sparkle"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0013.png", "description": "Pixel star variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0014.png", "description": "Pixel star variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0015.png", "description": "Pixel explosion particle"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0016.png", "description": "Small explosion flash"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0017.png", "description": "Pixel spark or flash"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0018.png", "description": "Small explosion burst"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0019.png", "description": "Small explosion burst variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0020.png", "description": "Tiny pixel particle"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0021.png", "description": "Tiny pixel particle"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0022.png", "description": "Tiny pixel particle"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0023.png", "description": "Tiny pixel particle"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0024.png", "description": "Small pixel debris"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0025.png", "description": "Pixel projectile or spark"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0026.png", "description": "Pixel projectile variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0027.png", "description": "Tiny pixel dot"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0028.png", "description": "Player spaceship facing up"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0029.png", "description": "Enemy spaceship facing down"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0030.png", "description": "Enemy spaceship variant facing down"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0031.png", "description": "Enemy spaceship variant facing down"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0032.png", "description": "Player spaceship variant facing up"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0033.png", "description": "Player spaceship variant facing up"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0034.png", "description": "Player spaceship variant facing up"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0035.png", "description": "Player spaceship variant facing up"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0036.png", "description": "Small explosion effect"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0037.png", "description": "Explosion frame with orange burst"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0038.png", "description": "Explosion frame with larger burst"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0039.png", "description": "Explosion frame with spreading burst"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0040.png", "description": "Large explosion frame"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0041.png", "description": "Explosion frame expanding"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png", "description": "Explosion frame fading"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0043.png", "description": "Explosion frame dissipating"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0044.png", "description": "Small explosion spark"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0045.png", "description": "Medium explosion frame"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0046.png", "description": "Medium explosion variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0047.png", "description": "Explosion burst with debris"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0048.png", "description": "Large explosion with fireball"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0049.png", "description": "Explosion with spreading flames"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0050.png", "description": "Large explosion dissipating"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0051.png", "description": "Explosion fading out"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0052.png", "description": "Small enemy ship facing down"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0053.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0054.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0055.png", "description": "Enemy ship with wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0056.png", "description": "Enemy fighter ship"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0057.png", "description": "Enemy bomber ship"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0058.png", "description": "Small enemy ship"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0059.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0060.png", "description": "Enemy ship with wide wings"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0061.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0062.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0063.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0064.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0065.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0066.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0067.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0068.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0069.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0070.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0071.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0072.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0073.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0074.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0075.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0076.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0077.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0078.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0079.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0080.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0081.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0082.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0083.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0084.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0085.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0086.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0087.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0088.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0089.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0090.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0091.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0092.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0093.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0094.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0095.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0096.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0097.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0098.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0099.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0100.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0101.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0102.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0103.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0104.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0105.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0106.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0107.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0108.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0109.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0110.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0111.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0112.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0113.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0114.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0115.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0116.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0117.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0118.png", "description": "Enemy ship variant"}, {"file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0119.png", "description": "Enemy ship variant"}];
+
+let assetsData = JSON.parse(JSON.stringify(INITIAL_DATA));
+
+function getCategory(item) {
+  const f = item.file;
+  if (f.includes('char_')) return 'Characters';
+  if (f.includes('Preview') || f.includes('Sample')) return 'Preview/Sample';
+  if (f.includes('Ships')) return 'Ships';
+  if (f.includes('Tiles')) return 'Tiles';
+  return 'Other';
+}
+
+function render() {
+  const container = document.getElementById('catalog');
+  const groups = {};
+
+  assetsData.forEach((item, idx) => {
+    const cat = getCategory(item);
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push({ ...item, _idx: idx });
+  });
+
+  let html = '';
+  for (const [cat, items] of Object.entries(groups)) {
+    html += `<h2>${cat} <span class="count">${items.length} items</span></h2>`;
+    html += '<div class="grid">';
+    items.forEach(item => {
+      const fname = item.file.split('/').pop();
+      const relPath = item.file.replace('/Users/lsq/env/assets/game/', '');
+      html += `
+        <div class="card">
+          <img src="${relPath}" alt="${fname}" onclick="zoomImg(this)">
+          <div class="info">
+            <div class="badge">${cat}</div>
+            <div class="filename">${fname}</div>
+            <textarea class="desc-edit" data-idx="${item._idx}" oninput="markDirty(this)">${item.description}</textarea>
+          </div>
+        </div>`;
+    });
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function zoomImg(img) {
+  if (img.dataset.zoomed === 'true') {
+    img.style.height = '120px';
+    img.style.objectFit = 'contain';
+    img.style.cursor = 'zoom-in';
+    img.dataset.zoomed = 'true' === 'false'; // noop guard
+    img.dataset.zoomed = 'false';
+  } else {
+    img.style.height = 'auto';
+    img.style.objectFit = 'unset';
+    img.style.cursor = 'zoom-out';
+    img.dataset.zoomed = 'true';
+  }
+}
+
+function markDirty(el) {
+  const idx = parseInt(el.dataset.idx);
+  assetsData[idx].description = el.value;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function saveJson() {
+  const json = JSON.stringify(assetsData, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'assets_map.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ JSON saved!');
+}
+
+function importJson() {
+  document.getElementById('jsonFileInput').click();
+}
+
+document.getElementById('jsonFileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      assetsData = JSON.parse(ev.target.result);
+      render();
+      showToast('✅ JSON imported!');
+    } catch(err) {
+      showToast('❌ Invalid JSON');
+    }
+  };
+  reader.readAsText(file);
+});
+
+render();
+</script>
+</body>
+</html>

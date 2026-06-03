@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tile Map Viewer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a2e;color:#eee;font-family:'Courier New',monospace;
+  display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:20px}
+h2{margin-bottom:16px}
+.map{display:grid;grid-template-columns:repeat(10,64px);gap:2px;
+  padding:20px;background:#16213e;border-radius:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.tile{width:64px;height:64px;position:relative;border-radius:4px;overflow:hidden}
+.tile img{width:100%;height:100%;object-fit:cover;image-rendering:pixelated}
+.tile .tag{position:absolute;bottom:2px;right:2px;font-size:8px;color:#fff;
+  background:rgba(0,0,0,.7);padding:1px 3px;border-radius:2px;pointer-events:none}
+.legend{margin-top:20px;padding:16px;background:#0f3460;border-radius:8px;max-width:800px}
+.legend h3{margin-bottom:8px}
+.li{display:inline-block;margin:4px 8px;font-size:13px}
+.lc{display:inline-block;width:16px;height:16px;border-radius:3px;vertical-align:middle;margin-right:4px}
+</style></head><body>
+<h2>🗺️ Tile Map Viewer</h2>
+<div class="map">
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-y-g-island"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0064.png"><span class="tag">G</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" style="background:#27ae60" title="W-y-g-left-top-beach"><span class="tag">G</span></div>
+<div class="tile" style="background:#27ae60" title="W-y-g-top-beach"><span class="tag">G</span></div>
+<div class="tile" style="background:#27ae60" title="W-y-g-top-beach"><span class="tag">G</span></div>
+<div class="tile" style="background:#27ae60" title="W-y-g-right-top-beach"><span class="tag">G</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" style="background:#27ae60" title="W-y-g-bottom-left-beach"><span class="tag">G</span></div>
+<div class="tile" title="W-y-g-island"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0064.png"><span class="tag">G</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-y-g-left-beach"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0049.png"><span class="tag">G</span></div>
+<div class="tile" title="G-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0110.png"><span class="tag">G</span></div>
+<div class="tile" title="G-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0110.png"><span class="tag">G</span></div>
+<div class="tile" title="W-y-g-right-beach"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0051.png"><span class="tag">G</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-y-g-left-top-negative-beach"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0053.png"><span class="tag">G</span></div>
+<div class="tile" title="G-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0110.png"><span class="tag">G</span></div>
+<div class="tile" title="O-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0056.png"><span class="tag">O</span></div>
+<div class="tile" title="G-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0110.png"><span class="tag">G</span></div>
+<div class="tile" title="G-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0110.png"><span class="tag">G</span></div>
+<div class="tile" title="W-y-o-right-top-beach"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0045.png"><span class="tag">O</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-y-g-left-beach"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0049.png"><span class="tag">G</span></div>
+<div class="tile" title="O-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0056.png"><span class="tag">O</span></div>
+<div class="tile" title="O-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0056.png"><span class="tag">O</span></div>
+<div class="tile" title="G-o-full-road"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0086.png"><span class="tag">R</span></div>
+<div class="tile" title="o-w-full-road"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0092.png"><span class="tag">r</span></div>
+<div class="tile" title="W-y-o-right-beach"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0057.png"><span class="tag">O</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-y-g-left-beach"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0049.png"><span class="tag">G</span></div>
+<div class="tile" title="G-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0110.png"><span class="tag">G</span></div>
+<div class="tile" title="O-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0056.png"><span class="tag">O</span></div>
+<div class="tile" title="G-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0110.png"><span class="tag">G</span></div>
+<div class="tile" title="G-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0110.png"><span class="tag">G</span></div>
+<div class="tile" title="W-y-o-right-beach"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0057.png"><span class="tag">O</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-y-g-left-beach"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0049.png"><span class="tag">G</span></div>
+<div class="tile" title="G-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0110.png"><span class="tag">G</span></div>
+<div class="tile" title="O-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0056.png"><span class="tag">O</span></div>
+<div class="tile" title="G-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0110.png"><span class="tag">G</span></div>
+<div class="tile" title="G-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0110.png"><span class="tag">G</span></div>
+<div class="tile" style="background:#e67e22" title="W-y-o-bottom-right-beach"><span class="tag">O</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-y-o-left-beach"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0055.png"><span class="tag">O</span></div>
+<div class="tile" title="G-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0110.png"><span class="tag">G</span></div>
+<div class="tile" title="G-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0110.png"><span class="tag">G</span></div>
+<div class="tile" title="O-full-land"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0056.png"><span class="tag">O</span></div>
+<div class="tile" title="W-y-g-right-beach"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0051.png"><span class="tag">G</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" style="background:#27ae60" title="W-y-g-bottom-left-beach"><span class="tag">G</span></div>
+<div class="tile" title="W-y-g-bottom-beach"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0062.png"><span class="tag">G</span></div>
+<div class="tile" title="W-y-g-bottom-beach"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0062.png"><span class="tag">G</span></div>
+<div class="tile" title="W-y-g-bottom-beach"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0062.png"><span class="tag">G</span></div>
+<div class="tile" style="background:#27ae60" title="W-y-g-bottom-right-beach"><span class="tag">G</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+<div class="tile" title="W-full-sea"><img src="/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png"><span class="tag">S</span></div>
+</div>
+<div class="legend"><h3>图例</h3>
+<div class="li"><span class="lc" style="background:#1a5276"></span>S=海</div>
+<div class="li"><span class="lc" style="background:#27ae60"></span>G=绿地</div>
+<div class="li"><span class="lc" style="background:#e67e22"></span>O=红地</div>
+<div class="li"><span class="lc" style="background:#2ecc71"></span>R=绿路</div>
+<div class="li"><span class="lc" style="background:#f39c12"></span>r=红路</div>
+</div></body></html>
