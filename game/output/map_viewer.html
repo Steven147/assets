@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tile Map Viewer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a2e;color:#eee;font-family:'Courier New',monospace;
+  display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:20px}
+h2{margin-bottom:8px}
+.subtitle{color:#888;font-size:13px;margin-bottom:18px}
+.toolbar{display:flex;justify-content:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.toolbar button{background:#0f3460;color:#e94560;border:1px solid #e94560;padding:8px 20px;
+  border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all .2s}
+.toolbar button:hover{background:#e94560;color:#fff}
+.toolbar .default-link{background:#0f3460;color:#6a9fb5;border:1px solid #1b3a5c;padding:8px 20px;
+  border-radius:8px;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;transition:all .2s}
+.toolbar .default-link:hover{background:#1b3a5c;color:#e94560;border-color:#e94560}
+.map{display:grid;gap:1px;padding:16px;background:#16213e;border-radius:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.tile{width:48px;height:48px;position:relative;border-radius:2px;overflow:hidden}
+.tile img{width:100%;height:100%;object-fit:cover;image-rendering:pixelated}
+.tile .tag{position:absolute;bottom:1px;right:1px;font-size:8px;color:#fff;
+  background:rgba(0,0,0,.7);padding:0 2px;border-radius:2px;pointer-events:none}
+.tile .miss{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:9px;color:#ff6b6b;text-align:center;padding:2px;line-height:1.1}
+.legend{margin-top:20px;padding:16px;background:#0f3460;border-radius:8px;max-width:1000px}
+.legend h3{margin-bottom:8px}
+.li{display:inline-block;margin:4px 8px;font-size:13px}
+.lc{display:inline-block;width:16px;height:16px;border-radius:3px;vertical-align:middle;margin-right:4px}
+.stats{margin-top:20px;padding:16px;background:#0f3460;border-radius:8px;max-width:1000px;font-size:12px}
+.stats div{margin:2px 0}
+.empty{padding:40px;text-align:center;color:#888;line-height:1.6}
+.empty code{background:#0f3460;padding:2px 6px;border-radius:3px;color:#6a9fb5}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+  background:#16213e;color:#4ade80;border:1px solid #4ade80;
+  padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;
+  opacity:0;transition:opacity .3s;pointer-events:none;z-index:100}
+.toast.show{opacity:1}
+.toast.error{color:#ff6b6b;border-color:#ff6b6b}
+</style></head><body>
+<h2>🗺️ Tile Map Viewer</h2>
+<p class="subtitle">通过本地 server 自动加载 (推荐: <code>just view-map-bg</code>)，或手动 Import</p>
+<div class="toolbar">
+  <button onclick="document.getElementById('jsonFileInput').click()">📂 Import JSON</button>
+  <a class="default-link" href="map_resolved.json" target="_blank">🔗 map_resolved.json</a>
+  <input type="file" id="jsonFileInput" accept=".json" style="display:none">
+</div>
+<div id="root"><div class="empty">Loading…</div></div>
+<div class="legend"><h3>图例</h3><div class="li"><span class="lc" style="background:#1a5276"></span>S=海</div><div class="li"><span class="lc" style="background:#27ae60"></span>G=绿地</div><div class="li"><span class="lc" style="background:#e67e22"></span>O=红地</div><div class="li"><span class="lc" style="background:#2ecc71"></span>R=绿路</div><div class="li"><span class="lc" style="background:#f39c12"></span>r=红路</div></div>
+<div id="stats"></div>
+<div class="toast" id="toast"></div>
+<script>
+const COLORS = {"S": "#1a5276", "G": "#27ae60", "O": "#e67e22", "R": "#2ecc71", "r": "#f39c12"};
+// JSON 中的图片路径是绝对路径 (/Users/lsq/env/assets/game/...)。
+// 本 HTML 在 output/ 下, 需要剥离绝对前缀, 再加 ../ 跳到 game/ 根。
+const ABS_PREFIX = "/Users/lsq/env/assets/game/";
+
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => t.className = 'toast', 2200);
+}
+
+// 把 JSON 中的绝对路径转成 server 根 (/) 下的相对路径。
+// HTML 在 /output/, server 根在 game/, 所以图片访问 /Tiles/xxx.png 即可。
+function resolveSrc(fp) {
+  if (!fp) return '';
+  if (fp.indexOf(ABS_PREFIX) === 0) return '/' + fp.slice(ABS_PREFIX.length);
+  return fp;
+}
+
+function render(grid) {
+  const cols = grid[0] ? grid[0].length : 0;
+  const root = document.getElementById('root');
+  root.innerHTML = '';
+  const map = document.createElement('div');
+  map.className = 'map';
+  map.style.gridTemplateColumns = 'repeat(' + cols + ', 48px)';
+
+  const missing = {};
+  let html = '';
+  grid.forEach((row, r) => {
+    row.forEach((cell, c) => {
+      const ch = cell.char, desc = cell.desc, fp = cell.file;
+      const bg = COLORS[ch] || '#333';
+      if (fp) {
+        html += '<div class="tile" title="' + desc + ' [' + r + ',' + c + ']">' +
+                '<img src="' + resolveSrc(fp) + '">' +
+                '<span class="tag">' + ch + '</span></div>';
+      } else {
+        missing[desc] = (missing[desc] || 0) + 1;
+        html += '<div class="tile" style="background:' + bg + '" title="MISSING: ' + desc + ' [' + r + ',' + c + ']">' +
+                '<span class="miss">' + desc + '</span></div>';
+      }
+    });
+  });
+  map.innerHTML = html;
+  root.appendChild(map);
+
+  const stats = document.getElementById('stats');
+  const missKeys = Object.keys(missing);
+  if (missKeys.length) {
+    stats.className = 'stats';
+    let s = '<h3>⚠️ 缺失资源</h3>';
+    missKeys.sort((a, b) => missing[b] - missing[a]).forEach(k => {
+      s += '<div>' + k + ' × ' + missing[k] + '</div>';
+    });
+    stats.innerHTML = s;
+  } else {
+    stats.className = '';
+    stats.innerHTML = '';
+  }
+}
+
+document.getElementById('jsonFileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data) || !Array.isArray(data[0])) {
+        throw new Error('expected 2D array of cells');
+      }
+      render(data);
+      showToast('✅ Loaded ' + data.length + '×' + (data[0]||[]).length);
+    } catch(err) {
+      showToast('❌ Invalid JSON: ' + err.message, true);
+    }
+  };
+  reader.readAsText(file);
+});
+
+// 启动: 优先 fetch 同目录 map_resolved.json (需要 http:// server)。
+// 失败 (例如 file:// 打开) → 提示用户手动 Import。
+(function autoload() {
+  if (location.protocol === 'file:') {
+    document.getElementById('root').innerHTML =
+      '<div class="empty">⚠️ 你正在通过 <code>file://</code> 打开此页面，浏览器会拒绝加载本地图片。<br>' +
+      '推荐: 在 game/ 目录运行 <code>just view-map-bg</code>，或手动 <b>📂 Import JSON</b>。</div>';
+    return;
+  }
+  fetch('map_resolved.json')
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(data => { render(data); showToast('✅ Auto-loaded map_resolved.json'); })
+    .catch(err => {
+      document.getElementById('root').innerHTML =
+        '<div class="empty">未自动找到 <code>map_resolved.json</code> (' + err + ')。<br>' +
+        '请使用上面 <b>📂 Import JSON</b> 手动选择。</div>';
+    });
+})();
+</script>
+</body></html>

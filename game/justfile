@@ -1,0 +1,45 @@
+PORT := "8765"
+
+default:
+    @just --list
+
+# 构建地图: 解析声明 → 生成 map_resolved.json + map_viewer.html
+build:
+    python3 map_builder.py
+
+# build 别名
+run: build
+
+# 启动本地 HTTP 服务 (在 game 根目录, 这样 ../ 图片也能加载)
+serve:
+    @echo "Serving on http://localhost:{{PORT}}/  (Ctrl+C to stop)"
+    @python3 -m http.server {{PORT}} --bind 127.0.0.1
+
+# 构建后, 在已运行的 server 上打开地图查看器 (需先在另一终端跑 `just serve`)
+view-map: build
+    @if ! curl -sf -o /dev/null http://localhost:{{PORT}}/; then \
+        echo "⚠️  本地 server 未运行, 请先在另一个终端执行: just serve"; \
+        exit 1; \
+    fi
+    open "http://localhost:{{PORT}}/output/map_viewer.html"
+
+# 一键模式: 后台启动 server, 打开浏览器, server 留作守护进程
+view-map-bg: build
+    @if ! curl -sf -o /dev/null http://localhost:{{PORT}}/; then \
+        echo "Starting background server on :{{PORT}}..."; \
+        (python3 -m http.server {{PORT}} --bind 127.0.0.1 >/dev/null 2>&1 &); \
+        sleep 0.5; \
+    fi
+    open "http://localhost:{{PORT}}/output/map_viewer.html"
+
+view-asset:
+    @if ! curl -sf -o /dev/null http://localhost:{{PORT}}/; then \
+        echo "Starting background server on :{{PORT}}..."; \
+        (python3 -m http.server {{PORT}} --bind 127.0.0.1 >/dev/null 2>&1 &); \
+        sleep 0.5; \
+    fi
+    open "http://localhost:{{PORT}}/assets_catalog.html"
+
+# 清理生成产物 (回收站)
+clean:
+    trash input/map_decl.json output/map_resolved.json output/map_viewer.html 2>/dev/null || true
