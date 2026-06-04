@@ -1,15 +1,19 @@
 [
   {
-    "file": "/Users/lsq/env/assets/game/split-girls/output/char_05_764x69_869x256.png",
+    "file": "/Users/lsq/env/assets/game/split-girls/output/girl-front.png",
     "description": "Girl front"
   },
   {
-    "file": "/Users/lsq/env/assets/game/split-girls/output/char_06_892x68_997x256.png",
+    "file": "/Users/lsq/env/assets/game/split-girls/output/girl-back.png",
     "description": "Girl back"
   },
   {
-    "file": "/Users/lsq/env/assets/game/split-girls/output/char_12_842x325_953x500.png",
+    "file": "/Users/lsq/env/assets/game/split-girls/output/girl-right.png",
     "description": "Girl right"
+  },
+  {
+    "file": "/Users/lsq/env/assets/game/split-girls/output/girl-left.png",
+    "description": "Girl left"
   },
   {
     "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Preview.png",
