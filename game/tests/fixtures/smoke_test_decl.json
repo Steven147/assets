@@ -1,0 +1,17 @@
+{
+ "name": "smoke_test",
+ "kind": "single",
+ "source": "local",
+ "rows":6,
+ "cols":6,
+ "map": [
+ "SSSSSS",
+ "SGGGGGS",
+ "SGRRRGS",
+ "SGRRRGS",
+ "SGGGGGS",
+ "SSSSSS"
+ ],
+ "meta": {},
+ "pois": []
+}
