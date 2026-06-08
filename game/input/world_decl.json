@@ -1,0 +1,166 @@
+{
+  "name": "world",
+  "scenes": [
+    {
+      "id": "world",
+      "title": "🌍 世界地图",
+      "back": null,
+      "rows": 22,
+      "cols": 60,
+      "map": [
+        "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSGGGGGGGGGGGGGGGGGGGGSSSSSSSSSS",
+        "SSSSSGGGGGGGSSSSSSSSSSSSSSSSSSGGGGGGGGGGGGGGGGGGGGSSSSSSSSSS",
+        "SSSSGGGGGGGGGGSSSSSSSSSSSSSSGGGGGGGGGGGGGGGGGGGGGGSSSSSSSSSS",
+        "SSSSGGGGGGGGGGSSSSSSSSSSSSSSGGGGGGGGGGGGGGGGGGGGSSGGSSSSSSSS",
+        "SSSSGGGGGGGGGGSSSSSSSSSSSSSSGGGGGGGGGGGGGGGGGGGGSSGGGSSSSSSS",
+        "SSSSGGGGGGGGGGSSSSSSSSSSSSSSGGGGGGGGGGGGGGGGGGGGSSGGGSSSSSSS",
+        "SSSSGGGGGGGGGGSSSSSSSSSSSSSSGGGGGGGGGGGGGGGGGGGGSSGGSSSSSSSS",
+        "SSSSSGGGGGGGGSSSSSSSSSSSSSSSGGGGGGGGGGGGGGGGGGGGSSSSSSSSSSSS",
+        "SSSSSGGGGGGGSSSSSSSSSSSSSSSSSSSSGGGGGGGGGGGGSSSSSSSSSSSSSSSS",
+        "SSSSSGGGGGGSSSSSSSSSSSSSSSSSSSSSGGGGGGGGGGGGSSSSSSSSSSSSSSSS",
+        "SSSSSSGGGGGSSSSSSSSSSSSSSSSSSSSSSSGGGGGGSSSSSSSSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS"
+      ],
+      "regions": [
+        {
+          "id": "usa",
+          "label": "美洲",
+          "subtitle": "Syracuse 雪城 · 2025",
+          "row": 5,
+          "col": 6,
+          "rows": 5,
+          "cols": 7
+        },
+        {
+          "id": "china",
+          "label": "中国",
+          "subtitle": "西藏·杭州·上海·厦门·潍坊·西安",
+          "row": 4,
+          "col": 28,
+          "rows": 5,
+          "cols": 9
+        },
+        {
+          "id": "japan",
+          "label": "日本",
+          "subtitle": "东京 · 2024",
+          "row": 5,
+          "col": 50,
+          "rows": 4,
+          "cols": 3
+        },
+        {
+          "id": "sea",
+          "label": "东南亚",
+          "subtitle": "泰国 · 2022",
+          "row": 9,
+          "col": 32,
+          "rows": 4,
+          "cols": 5
+        }
+      ]
+    },
+    {
+      "id": "usa",
+      "title": "🇺🇸 美洲",
+      "back": "world",
+      "rows": 12,
+      "cols": 18,
+      "map": [
+        "SSSSSSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSSSSSS",
+        "SGGGGGGGGGGGGGGGSS",
+        "SGGGGGGGGGGGGGGGSS",
+        "SGGGGGGGGGGGGGGGSS",
+        "SGGGGGGGGGGGGGGSSS",
+        "SGGGGGGGGGGGLGGSSS",
+        "SGGGGGGGGGGGGGGSSS",
+        "SGGGGGGGGGGGSSSSSS",
+        "SSSSSSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSSSSSS"
+      ]
+    },
+    {
+      "id": "china",
+      "title": "🇨🇳 中国",
+      "back": "world",
+      "rows": 18,
+      "cols": 18,
+      "map": [
+        "SSSSSSSSSSSSSSSSSS",
+        "SGGGGGGGGGGGGGGGGS",
+        "SGLGGGGGGGGGGGGGGS",
+        "SGGGGGGGGGGGGGGGGS",
+        "SGGGRRRRRRRRRRGGGS",
+        "SGGGGGRGGGGGGGGGGS",
+        "SGGGGGRGLGGGGGGGGS",
+        "SGGGGGRGGGGGGGGGGS",
+        "SGGGGGRGLGGGGGGGGS",
+        "SGGGGGRGLLGGGGGGGS",
+        "SGGGGGRGLGGGGGGGGS",
+        "SGGGGGRGGGGGGGGGGS",
+        "SGGGGGGGGGGGGGGGGS",
+        "SGGGGGGGGGGGGGGGGS",
+        "SGGGGGGGGGGGGGGGGS",
+        "SGGGGGGGGGGGGGGGGS",
+        "SGGGGGGGGGGGGGGGGS",
+        "SSSSSSSSSSSSSSSSSS"
+      ]
+    },
+    {
+      "id": "japan",
+      "title": "🇯🇵 日本",
+      "back": "world",
+      "rows": 12,
+      "cols": 14,
+      "map": [
+        "SSSSSSSSSSSSSS",
+        "SSGGSSSSSSSSSS",
+        "SSGGSSSSSSSSSS",
+        "SGGGGGSSSSSSSS",
+        "SGGGGGGGSSSSSS",
+        "SGGGGGGGGGSSSS",
+        "SSGGGGGLGGGGSS",
+        "SSGGGGGGGGGGSS",
+        "SSSGGGGGGGGGSS",
+        "SSSSSSGGSSSSSS",
+        "SSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSS"
+      ]
+    },
+    {
+      "id": "sea",
+      "title": "🌴 东南亚",
+      "back": "world",
+      "rows": 14,
+      "cols": 16,
+      "map": [
+        "SSSSSSSSSSSSSSSS",
+        "SSSSSSSSSSSSSSSS",
+        "SSSGGGGGGGSSSSSS",
+        "SSGGGGGGGGGGSSSS",
+        "SGGGGGGGGGGGGSSS",
+        "SGGGGLLGGGGGGSSS",
+        "SGGGGGGGGGGGGSSS",
+        "SGGGGGGGGGGGSSSS",
+        "SSSGGGGGGGGGSSSS",
+        "SSSSGGGGGGGGSSSS",
+        "SSSSGGGGGGGGSSSS",
+        "SSSSSGGGGGGSSSSS",
+        "SSSSSGGGGGGSSSSS",
+        "SSSSSSSSSSSSSSSS"
+      ]
+    }
+  ]
+}

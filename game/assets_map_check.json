@@ -1,602 +1,602 @@
 [
   {
-    "file": "/Users/lsq/env/assets/game/split-girls/output/girl-front.png",
+    "file": "split-girls/output/girl-front.png",
     "description": "Girl front"
   },
   {
-    "file": "/Users/lsq/env/assets/game/split-girls/output/girl-back.png",
+    "file": "split-girls/output/girl-back.png",
     "description": "Girl back"
   },
   {
-    "file": "/Users/lsq/env/assets/game/split-girls/output/girl-right.png",
+    "file": "split-girls/output/girl-right.png",
     "description": "Girl right"
   },
   {
-    "file": "/Users/lsq/env/assets/game/split-girls/output/girl-left.png",
+    "file": "split-girls/output/girl-left.png",
     "description": "Girl left"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Preview.png",
+    "file": "kenney_pixel-shmup/Preview.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Sample.png",
+    "file": "kenney_pixel-shmup/Sample.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0000.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0000.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0001.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0001.png",
     "description": "Red flight"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0002.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0002.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0003.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0003.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0004.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0004.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0005.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0005.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0006.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0006.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0007.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0007.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0008.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0008.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0009.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0009.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0010.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0010.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0011.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0011.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0012.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0012.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0013.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0013.png",
     "description": "Grey flight"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0014.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0014.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0015.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0015.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0016.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0016.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0017.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0017.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0018.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0018.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0019.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0019.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0020.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0020.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0021.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0021.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0022.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0022.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Ships/ship_0023.png",
+    "file": "kenney_pixel-shmup/Ships/ship_0023.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0000.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0000.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0001.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0001.png",
     "description": "Pause icon"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0002.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0002.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0003.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0003.png",
     "description": "location"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0004.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0004.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0005.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0005.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0006.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0006.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0007.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0007.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0008.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0008.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0009.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0009.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0010.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0010.png",
     "description": "Close icon"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0011.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0011.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0012.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0012.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0013.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0013.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0014.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0014.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0015.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0015.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0016.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0016.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0017.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0017.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0018.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0018.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0019.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0019.png",
     "description": "0 icon"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0020.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0020.png",
     "description": "1 icon "
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0021.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0021.png",
     "description": "2 icon"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0022.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0022.png",
     "description": "3 icon"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0023.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0023.png",
     "description": "4 icon"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0024.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0024.png",
     "description": "hospital"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0025.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0025.png",
     "description": "Parking"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0026.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0026.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0027.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0027.png",
     "description": "focusing"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0028.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0028.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0029.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0029.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0030.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0030.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0031.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0031.png",
     "description": "5-icon"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0032.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0032.png",
     "description": "6-icon"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0033.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0033.png",
     "description": "7-icon"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0034.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0034.png",
     "description": "8-icon"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0035.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0035.png",
     "description": "9-icon"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0036.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0036.png",
     "description": "g-grass"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0037.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0037.png",
     "description": "w-y-g-left-top-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0038.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0038.png",
     "description": "w-y-g-top-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0039.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0039.png",
     "description": "w-y-g-right-top-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0040.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0040.png",
     "description": "w-y-g-right-bottom-negative-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0041.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0041.png",
     "description": "w-y-g-left-bottom-negative-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0042.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0042.png",
     "description": "W-full-sea"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0043.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0043.png",
     "description": "W-y-o-left-top-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0044.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0044.png",
     "description": "W-y-o-top-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0045.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0045.png",
     "description": "W-y-o-right-top-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0046.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0046.png",
     "description": "w-y-o-right-bottom-negative-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0047.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0047.png",
     "description": "w-y-o-left-bottom-negative-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0048.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0048.png",
     "description": "g-G-Tree"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0049.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0049.png",
     "description": "W-y-g-left-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0050.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0050.png",
     "description": "G-full-land"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0051.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0051.png",
     "description": "W-y-g-right-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0052.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0052.png",
     "description": "W-y-g-right-top-negative-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0053.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0053.png",
     "description": "W-y-g-left-top-negative-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0054.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0054.png",
     "description": "o-g-Tree"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0055.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0055.png",
     "description": "W-y-o-left-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0056.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0056.png",
     "description": "O-full-land"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0057.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0057.png",
     "description": "W-y-o-right-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0058.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0058.png",
     "description": "W-y-o-right-top-negative-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0059.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0059.png",
     "description": "W-y-o-left-top-negative-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0060.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0060.png",
     "description": "g-g-Tree-2"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0061.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0061.png",
     "description": "W-y-g-left-bottom-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0062.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0062.png",
     "description": "W-y-g-bottom-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0063.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0063.png",
     "description": "W-y-g-right-bottom-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0064.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0064.png",
     "description": "W-y-g-island"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0065.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0065.png",
     "description": "W-y-g-island-2"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0066.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0066.png",
     "description": "o-g-Tree-2"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0067.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0067.png",
     "description": "W-y-o-left-bottom-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0068.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0068.png",
     "description": "W-y-o-bottom-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0069.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0069.png",
     "description": "W-y-o-right-bottom-beach"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0070.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0070.png",
     "description": "W-y-o-island"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0071.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0071.png",
     "description": "W-y-o-island-2"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0072.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0072.png",
     "description": "g-r-house"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0073.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0073.png",
     "description": "G-o-right-bottom-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0074.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0074.png",
     "description": "G-o-left-right-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0075.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0075.png",
     "description": "G-o-left-bottom-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0076.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0076.png",
     "description": "G-o-right-top-bottom-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0077.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0077.png",
     "description": "G-o-left-top-bottom-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0078.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0078.png",
     "description": "o-b-house"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0079.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0079.png",
     "description": "o-w-right-bottom-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0080.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0080.png",
     "description": "o-w-left-right-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0081.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0081.png",
     "description": "o-w-left-bottom-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0082.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0082.png",
     "description": "o-w-right-top-bottom-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0083.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0083.png",
     "description": "o-w-left-top-bottom-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0084.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0084.png",
     "description": "g-r-house-2"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0085.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0085.png",
     "description": "G-o-top-bottom-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0086.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0086.png",
     "description": "G-o-full-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0087.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0087.png",
     "description": "G-o-full-road-2"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0088.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0088.png",
     "description": "G-o-left-right-bottom-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0089.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0089.png",
     "description": "G-o-left-right-top-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0090.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0090.png",
     "description": "o-b-house-2"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0091.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0091.png",
     "description": "o-w-top-bottom-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0092.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0092.png",
     "description": "o-w-full-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0093.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0093.png",
     "description": "o-w-full-road-2"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0094.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0094.png",
     "description": "o-w-left-right-bottom-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0095.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0095.png",
     "description": "o-w-left-right-top-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0096.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0096.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0097.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0097.png",
     "description": "G-o-right-top-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0098.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0098.png",
     "description": "G-o-left-right-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0099.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0099.png",
     "description": "G-o-left-top-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0100.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0100.png",
     "description": "G-o-bottom-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0101.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0101.png",
     "description": "G-o-right-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0102.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0102.png",
     "description": "O-b-flag"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0103.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0103.png",
     "description": "o-w-right-top-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0104.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0104.png",
     "description": "o-w-left-right-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0105.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0105.png",
     "description": "o-w-left-top-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0106.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0106.png",
     "description": "o-w-bottom-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0107.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0107.png",
     "description": "o-w-right-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0108.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0108.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0109.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0109.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0110.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0110.png",
     "description": "G-full-land"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0111.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0111.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0112.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0112.png",
     "description": "g-o-top-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0113.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0113.png",
     "description": "g-o-left-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0114.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0114.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0115.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0115.png",
     "description": "Enemy ship variant"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0116.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0116.png",
     "description": "O-full-land-2"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0117.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0117.png",
     "description": ""
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0118.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0118.png",
     "description": "o-w-top-road"
   },
   {
-    "file": "/Users/lsq/env/assets/game/kenney_pixel-shmup/Tiles/tile_0119.png",
+    "file": "kenney_pixel-shmup/Tiles/tile_0119.png",
     "description": "o-w-left-road"
   }
 ]

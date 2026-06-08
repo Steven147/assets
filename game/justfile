@@ -1,7 +1,16 @@
 PORT := "8765"
 
+# OSM 工作流默认参数
+OSM_CITY := "shanghai"
+OSM_SIZE_KM := "10"
+OSM_OUT := "output"
+
 default:
     @just --list
+
+# ============================================================
+# 原始字符地图工作流 (map_builder.py 自带的测试图)
+# ============================================================
 
 # 构建地图: 解析声明 → 生成 map_resolved.json + map_viewer.html
 build:
@@ -16,7 +25,7 @@ serve:
     @python3 -m http.server {{PORT}} --bind 127.0.0.1
 
 # 构建后, 在已运行的 server 上打开地图查看器 (需先在另一终端跑 `just serve`)
-view-map: build
+view-map:
     @if ! curl -sf -o /dev/null http://localhost:{{PORT}}/; then \
         echo "⚠️  本地 server 未运行, 请先在另一个终端执行: just serve"; \
         exit 1; \
@@ -24,7 +33,7 @@ view-map: build
     open "http://localhost:{{PORT}}/output/map_viewer.html"
 
 # 一键模式: 后台启动 server, 打开浏览器, server 留作守护进程
-view-map-bg: build
+view-map-bg:
     @if ! curl -sf -o /dev/null http://localhost:{{PORT}}/; then \
         echo "Starting background server on :{{PORT}}..."; \
         (python3 -m http.server {{PORT}} --bind 127.0.0.1 >/dev/null 2>&1 &); \
@@ -43,3 +52,47 @@ view-asset:
 # 清理生成产物 (回收站)
 clean:
     trash input/map_decl.json output/map_resolved.json output/map_viewer.html 2>/dev/null || true
+
+# ============================================================
+# OSM → 1000×1000 游戏地图工作流
+# 顺序: osm-fetch → osm-build → osm-viewer
+# 产物全部落到 output/<city>_<size>km/ 同一个文件夹
+# 预置城市: shanghai beijing tokyo paris london newyork hangzhou shenzhen guangzhou
+# 用法: just osm-fetch shanghai 5
+#       just osm-all beijing 20
+# ============================================================
+
+# 1) 拉取 OSM 真实数据 → decl JSON + folium/matplotlib 可视化
+osm-fetch city=OSM_CITY size_km=OSM_SIZE_KM:
+    @mkdir -p {{OSM_OUT}}/{{city}}_{{size_km}}km
+    @.venv/bin/python3 osm_to_map.py \
+        --city {{city}} --size-km {{size_km}} \
+        --output-dir {{OSM_OUT}}/{{city}}_{{size_km}}km
+    @echo ""
+    @echo "📂 {{OSM_OUT}}/{{city}}_{{size_km}}km/:"
+    @ls -la {{OSM_OUT}}/{{city}}_{{size_km}}km/
+
+# 2) decl → map_resolved.json + map_viewer.html (调用 map_builder 管线)
+osm-build city=OSM_CITY size_km=OSM_SIZE_KM:
+    @.venv/bin/python3 osm_build.py {{OSM_OUT}}/{{city}}_{{size_km}}km
+
+# 3) 打开 folium 真实地图 (HTML, 含 lat/lon)
+osm-real city=OSM_CITY size_km=OSM_SIZE_KM:
+    @open {{OSM_OUT}}/{{city}}_{{size_km}}km/*_real.html
+
+# 4) 打开 matplotlib 游戏地图 (PNG, 1000×1000 字符网格)
+osm-png city=OSM_CITY size_km=OSM_SIZE_KM:
+    @open {{OSM_OUT}}/{{city}}_{{size_km}}km/*_game.png
+
+# 5) 启动 server + 打开 HTML 查看器 (游戏瓦片)
+osm-viewer city=OSM_CITY size_km=OSM_SIZE_KM:
+    @just view-map-bg
+    @sleep 0.3
+    @open "http://localhost:{{PORT}}/{{OSM_OUT}}/{{city}}_{{size_km}}km/map_viewer.html"
+
+# 6) 一键: fetch → build → viewer
+osm-all city=OSM_CITY size_km=OSM_SIZE_KM: (osm-fetch city size_km) (osm-build city size_km) (osm-viewer city size_km)
+
+# 清理所有 OSM 输出
+osm-clean:
+    @trash {{OSM_OUT}} 2>/dev/null || rm -rf {{OSM_OUT}}

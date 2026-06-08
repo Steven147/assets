@@ -76,9 +76,16 @@ def parse_tile_registry(json_path: str) -> TileRegistry:
 # 2. 地图声明解析 + 邻居分析
 # ============================================================
 
-VALID_CHARS = {"S", "G", "O", "R", "r"}
-LAND_CHARS = {"G", "O", "R", "r"}
+# L = location marker (city/POI). Renders as "location" tile.
+#  - 不参与 R1 (road-sea) 检查 (L 不是 road)
+#  - 不参与 R2 (1-wide land peninsula) 检查 (L 不触发 R2)
+#  - 参与 R3 (sea strait): L 视作 land, 邻居 S 不会因 L 在两侧而触发
+#  - 参与 R4 不适用 (L 不是 road)
+VALID_CHARS = {"S", "G", "O", "R", "r", "L"}
+LAND_CHARS = {"G", "O", "R", "r", "L"}
 ROAD_CHARS = {"R", "r"}
+LOCATION_CHARS = {"L"}
+SKIP_VALIDATION = {"L"}  # L cells skip R1-R4 checks entirely
 
 
 def parse_map(map_lines: list[str]) -> list[list[str]]:
@@ -108,6 +115,10 @@ def is_land(ch):
 
 def is_sea(ch):
     return ch == "S"
+
+
+def is_location(ch):
+    return ch in LOCATION_CHARS
 
 
 # ============================================================
@@ -151,6 +162,12 @@ def validate_map(grid) -> list[str]:
     for r in range(rows):
         for c in range(cols):
             ch = get_char(grid, r, c)
+
+            # L cells skip validation entirely (they are pure markers,
+            # always rendered as a fixed "location" tile).
+            if ch in SKIP_VALIDATION:
+                continue
+
             top = get_char(grid, r - 1, c)
             bot = get_char(grid, r + 1, c)
             lft = get_char(grid, r, c - 1)
@@ -220,6 +237,9 @@ def resolve_tile(grid, r, c) -> str:
     ch = grid[r][c]
     if ch == "S":
         return "W-full-sea"
+    if ch == "L":
+        # L is always a fixed "location" marker tile, regardless of neighbors.
+        return "location"
     if ch == "R":
         return _road(grid, r, c, "G", "o")
     if ch == "r":
@@ -550,10 +570,8 @@ document.getElementById('jsonFileInput').addEventListener('change', function(e) 
 # ============================================================
 
 
-def main():
-    base = Path(__file__).parent
-    registry = parse_tile_registry(str(base / "assets_map_check.json"))
-
+def process_single(base: Path, registry: TileRegistry) -> bool:
+    """原边界测试地图 (24×34, 字符: S/G/O/R/r)。单场景。"""
     # ---- 合法的大型测试地图 (24 列 × 30 行) ----
     # 所有海/陆地块均 ≥2 格宽和高, 道路 ≥1 格陆地缓冲。
     # 区块 A (行  1- 9): G 大陆 — 测 4 边 + 4 外凸角 + 4 内凹角 (2x2 嵌入海)
@@ -563,77 +581,39 @@ def main():
     map_decl = {
         "name": "boundary_test_map",
         "map": [
-            # 0
             "SSSSSSSSSSSSSSSSSSSSSSSS",
-            # ===== G 大陆 =====
-            # 1  G 顶边
             "SGGGGGGGGGGGGGGGGGGGGGGS",
-            # 2  G
             "SGGGGGGGGGGGGGGGGGGGGGGS",
-            # 3  内凹海洞 1: 2x2 在 (3-4, 3-4)
             "SGGSSGGGGGGGGGGGGGGGGGGS",
-            # 4
             "SGGSSGGGGGGGGGGGGGGGGGGS",
-            # 5  内凹海洞 2: 2x2 在 (5-6, 14-15) → 4 个 negative + cardinal beach
             "SGGGGGGGGGGGGGGSSGGGGGGS",
-            # 6
             "SGGGGGGGGGGGGGGSSGGGGGGS",
-            # 7  G
             "SGGGGGGGGGGGGGGGGGGGGGGS",
-            # 8  G
             "SGGGGGGGGGGGGGGGGGGGGGGS",
-            # 9  G 底边
             "SGGGGGGGGGGGGGGGGGGGGGGS",
-            # 10 海分隔 (≥2 高)
             "SSSSSSSSSSSSSSSSSSSSSSSS",
-            # 11
             "SSSSSSSSSSSSSSSSSSSSSSSS",
-            # ===== O 大陆 =====
-            # 12 O 顶
             "SOOOOOOOOOOOOOOOOOOOOOOS",
-            # 13 O
             "SOOOOOOOOOOOOOOOOOOOOOOS",
-            # 14 内凹海洞: 2x2 在 (14-15, 4-5)
             "SOOOOSSOOOOOOOOOOOOOOOOS",
-            # 15
             "SOOOOSSOOOOOOOOOOOOOOOOS",
-            # 16 O
             "SOOOOOOOOOOOOOOOOOOOOOOS",
-            # 17 内凹海洞: 2x2 在 (17-18, 16-17)
             "SOOOOOOOOOOOOOOOOSSOOOOS",
-            # 18
             "SOOOOOOOOOOOOOOOOSSOOOOS",
-            # 19 O
             "SOOOOOOOOOOOOOOOOOOOOOOS",
-            # 20 O 底
             "SOOOOOOOOOOOOOOOOOOOOOOS",
-            # 21 海分隔
             "SSSSSSSSSSSSSSSSSSSSSSSS",
-            # 22
             "SSSSSSSSSSSSSSSSSSSSSSSS",
-            # ===== 道路网络 (在 G 大陆内, 道路被 G 包裹) =====
-            # 23 G 顶
             "SGGGGGGGGGGGGGGGGGGGGGGS",
-            # 24 水平 R + 死路 + 间断
             "SGRRRRRGGGRGGGGGGRRRRRGS",
-            # 25 垂直 R + T 字 + 十字
             "SGGGGGRGGGRRRRGGRGGGGRGS",
-            # 26 十字 + 角
             "SGGRRRRRRRRGGGRRRRRRRRGS",
-            # 27 多种死路 + 拐角 (col 11 死路连到 row 26)
             "SGGGGGRGGGRRGGRGGGGGGRGS",
-            # 28 G 底
             "SGGGGGGGGGGGGGGGGGGGGGGS",
-            # 29 海分隔 (≥2 高)
             "SSSSSSSSSSSSSSSSSSSSSSSS",
-            # 30
             "SSSSSSSSSSSSSSSSSSSSSSSS",
-            # ===== 小岛 (≥2x2 或 1x1 完全 4 海包围) =====
-            # 31 第一行: 1x1 单点 + 2x2 + 2x2 + 2x2
             "SSGSSSGGSSSGGSSSGGSSGGSS"[:24],
-            # 32 第二行: 仅 2x2 部分 (第一格不连续 → 1x1 自动孤立)
             "SSSSSSGGSSSGGSSSGGSSGGSS"[:24],
-            # 33 海尾
             "SSSSSSSSSSSSSSSSSSSSSSSS",
         ],
     }
@@ -653,17 +633,13 @@ def main():
 
     grid = parse_map(map_decl["map"])
 
-    # 校验地形规则 (R1: 道路远离海; R2: 陆地不薄半岛; R3: 海不窄海峡)
     errors = validate_map(grid)
     if errors:
-        print(f"❌ 地图校验失败: {len(errors)} 条违规\n")
+        print(f"❌ single map 校验失败: {len(errors)} 条违规\n")
         for e in errors:
             print(f"  • {e}")
-        print()
-        raise MapValidationError(
-            f"map_decl 不符合 tile 几何约束 ({len(errors)} 条违规)"
-        )
-    print("✅ 地图校验通过\n")
+        return False
+    print("✅ single map 校验通过\n")
 
     desc_json = generate_desc_json(grid, registry)
     desc_path = output_dir / "map_resolved.json"
@@ -673,13 +649,12 @@ def main():
     html_path = output_dir / "map_viewer.html"
     generate_html(grid, registry, str(html_path))
 
-    print(f"地图声明: {map_path}")
-    print(f"资源 JSON: {desc_path}")
-    print(f"HTML 查看器: {html_path}")
-    print()
+    print(f"[single] 地图声明: {map_path}")
+    print(f"[single] 资源 JSON: {desc_path}")
+    print(f"[single] HTML 查看器: {html_path}\n")
 
     descs = [cell["desc"] for row in desc_json for cell in row]
-    print("Tile 使用统计:")
+    print("Tile 使用统计 (single):")
     for desc, cnt in Counter(descs).most_common():
         marker = "  " if desc in registry else "✗ "
         print(f"  {marker}{desc}: {cnt}")
@@ -689,6 +664,535 @@ def main():
         print("\n⚠️ 注册表缺失 (HTML 中标红显示):")
         for d in sorted(missing):
             print(f"  - {d}")
+    return True
+
+
+# ============================================================
+# 7. 多场景世界地图 (input/world_decl.json)
+# ============================================================
+
+
+def generate_world_viewer_html(world_resolved, registry, output_path):
+    """生成多场景查看器 + 飞行切换动画 (passthrough animation)。
+
+    设计要点:
+      - 每个场景渲染为独立的 <div class="scene">, 初始仅 root scene 可见
+      - 根场景 (world) 上叠加 regions: clickable 热点 + ✈️ 飞行图标
+      - 点击 region → 飞行 700ms:
+          · world scene 缩放并平移到 region 中心
+          · ✈️ sprite 沿 bezier 曲线飞到 region
+          · 到达后, 目标场景淡入, world 隐藏
+      - "← Back" 反向播放同一动画
+      - 浏览器前进/后退 (popstate) 同步场景
+    """
+    abs_prefix_js = json.dumps("/Users/lsq/env/assets/game/")
+
+    # Embedded resolved data — viewer is meant to be opened via http server
+    # that maps "/" to game/. So we embed the JSON directly.
+    resolved_json = json.dumps(world_resolved, ensure_ascii=False)
+
+    # Collect unique regions
+    root_scene = next((s for s in world_resolved["scenes"] if s.get("back") is None), world_resolved["scenes"][0])
+    regions = root_scene.get("regions", [])
+
+    # Legend items
+    legend_html = (
+        '<div class="li"><span class="lc" style="background:#1a5276"></span>海</div>'
+        '<div class="li"><span class="lc" style="background:#27ae60"></span>绿地</div>'
+        '<div class="li"><span class="lc" style="background:#e67e22"></span>红地</div>'
+        '<div class="li"><span class="lc" style="background:#2ecc71"></span>绿路</div>'
+        '<div class="li"><span class="lc" style="background:#f39c12"></span>红路</div>'
+        '<div class="li"><span class="lc" style="background:#6a9fb5"></span>📍 城市</div>'
+    )
+
+    html = f"""<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>World Map Viewer · Passthrough Flight</title>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{background:#0a0e27;color:#eee;font-family:'Courier New',monospace;
+  display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:20px;
+  overflow:hidden}}
+h2{{margin-bottom:4px;font-size:18px}}
+.subtitle{{color:#888;font-size:12px;margin-bottom:14px}}
+.toolbar{{display:flex;justify-content:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center}}
+.toolbar button{{background:#0f3460;color:#e94560;border:1px solid #e94560;padding:7px 16px;
+  border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;transition:all .2s}}
+.toolbar button:hover{{background:#e94560;color:#fff}}
+.toolbar .back{{background:#16213e;color:#6a9fb5;border-color:#1b3a5c;display:none}}
+.toolbar .back:hover{{background:#1b3a5c;color:#e94560;border-color:#e94560}}
+.toolbar .back.show{{display:inline-flex;align-items:center;gap:6px}}
+.scene-host{{position:relative;width:100%;max-width:1200px;height:600px;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at center, #16213e 0%, #0a0e27 100%);
+  border-radius:12px;overflow:hidden;perspective:1200px}}
+.scene{{position:absolute;display:grid;gap:1px;padding:12px;background:#16213e;
+  border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.4);
+  transform-origin:center center;transition:transform .7s cubic-bezier(.4,.0,.2,1),
+    opacity .7s ease}}
+.scene.fade-out{{opacity:0;pointer-events:none}}
+.scene.fade-in{{opacity:1;pointer-events:auto}}
+.scene.hidden{{display:none}}
+.tile{{width:36px;height:36px;position:relative;border-radius:2px;overflow:hidden;
+  transition:width .3s,height .3s}}
+.tile img{{width:100%;height:100%;object-fit:cover;image-rendering:pixelated}}
+.tile .tag{{position:absolute;bottom:1px;right:1px;font-size:8px;color:#fff;
+  background:rgba(0,0,0,.7);padding:0 2px;border-radius:2px;pointer-events:none}}
+.tile .miss{{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:9px;color:#ff6b6b;text-align:center;padding:2px;line-height:1.1}}
+.region{{position:absolute;border:2px solid #e94560;border-radius:8px;
+  background:rgba(233,69,96,.08);cursor:pointer;transition:all .25s;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  font-size:14px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8);
+  pointer-events:auto;z-index:10}}
+.region:hover{{background:rgba(233,69,96,.25);border-color:#ffd166;color:#ffd166;
+  transform:scale(1.04)}}
+.region .sub{{font-size:10px;font-weight:400;color:#ccc;margin-top:2px;
+  text-shadow:0 1px 2px rgba(0,0,0,.9);letter-spacing:.2px}}
+.region .pin{{position:absolute;top:-14px;font-size:16px;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.8))}}
+.flight{{position:absolute;width:42px;height:42px;pointer-events:none;z-index:50;
+  opacity:0;transform-origin:center center;transition:none}}
+.flight.show{{opacity:1}}
+.flight img{{width:100%;height:100%;object-fit:contain;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.6))}}
+.legend{{margin-top:14px;padding:12px;background:#0f3460;border-radius:8px;max-width:1200px}}
+.legend h3{{margin-bottom:6px;font-size:13px}}
+.li{{display:inline-block;margin:3px 6px;font-size:12px}}
+.lc{{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;margin-right:3px}}
+.toast{{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+  background:#16213e;color:#4ade80;border:1px solid #4ade80;
+  padding:10px 20px;border-radius:9px;font-size:13px;font-weight:600;
+  opacity:0;transition:opacity .3s;pointer-events:none;z-index:200}}
+.toast.show{{opacity:1}}
+.scene-label{{position:absolute;top:18px;left:50%;transform:translateX(-50%);
+  background:rgba(15,52,96,.92);color:#ffd166;padding:6px 18px;border-radius:18px;
+  font-size:14px;font-weight:700;letter-spacing:1px;border:1px solid #e94560;
+  pointer-events:none;z-index:15;opacity:0;transition:opacity .35s}}
+.scene-label.show{{opacity:1}}
+</style></head><body>
+<h2>🌍 Birthday World · 6 年飞行航线</h2>
+<p class="subtitle">点击地图上的红色区域 → 飞入子场景 · 按 ← Back 返回</p>
+<div class="toolbar">
+  <button class="back" id="backBtn">← 返回世界</button>
+</div>
+<div class="scene-host" id="sceneHost">
+  <div class="scene-label" id="sceneLabel"></div>
+  <div class="flight" id="flight"><img src="/kenney_pixel-shmup/Ships/ship_0001.png" alt="✈️"></div>
+</div>
+<div class="legend"><h3>图例</h3>{legend_html}</div>
+<div class="toast" id="toast"></div>
+<script>
+const ABS_PREFIX = {abs_prefix_js};
+const RESOLVED = {resolved_json};
+const COLORS = {{S:"#1a5276",G:"#27ae60",O:"#e67e22",R:"#2ecc71",r:"#f39c12",L:"#6a9fb5"}};
+
+const $ = (id) => document.getElementById(id);
+const host = $("sceneHost");
+const flight = $("flight");
+const sceneLabel = $("sceneLabel");
+const backBtn = $("backBtn");
+const toast = $("toast");
+
+function showToast(msg, isErr) {{
+  toast.textContent = msg;
+  toast.className = "toast show" + (isErr ? " error" : "");
+  setTimeout(() => toast.className = "toast", 1800);
+}}
+
+function resolveSrc(fp) {{
+  if (!fp) return "";
+  if (fp.indexOf(ABS_PREFIX) === 0) return "/" + fp.slice(ABS_PREFIX.length);
+  return fp;
+}}
+
+// 渲染单个场景的 grid (cell 数组)
+function renderGrid(cells) {{
+  const rows = cells.length;
+  const cols = cells[0] ? cells[0].length : 0;
+  const div = document.createElement("div");
+  div.className = "scene-grid";
+  div.style.gridTemplateColumns = `repeat(${{cols}}, 36px)`;
+  let html = "";
+  cells.forEach((row, r) => {{
+    row.forEach((cell, c) => {{
+      const ch = cell.char, desc = cell.desc, fp = cell.file;
+      if (fp) {{
+        html += `<div class="tile" title="${{desc}} [${{r}},${{c}}]">` +
+                `<img src="${{resolveSrc(fp)}}">` +
+                `<span class="tag">${{ch}}</span></div>`;
+      }} else {{
+        html += `<div class="tile" style="background:${{COLORS[ch]||'#333'}}" title="MISSING: ${{desc}}">` +
+                `<span class="miss">${{desc}}</span></div>`;
+      }}
+    }});
+  }});
+  div.innerHTML = html;
+  return div;
+}}
+
+// 全部场景预渲染 (隐藏), 等待切换显示
+const sceneEls = {{}};
+RESOLVED.scenes.forEach((sc, idx) => {{
+  const wrap = document.createElement("div");
+  wrap.className = "scene hidden";
+  wrap.id = "scene-" + sc.id;
+  wrap.dataset.idx = idx;
+  wrap.appendChild(renderGrid(sc.grid));
+
+  // 根场景叠加热区
+  if (sc.regions && sc.regions.length) {{
+    // 拿到 tile 像素位置
+    const tileSize = 36 + 1; // gap 1px
+    const pad = 12;
+    sc.regions.forEach(reg => {{
+      const r = document.createElement("div");
+      r.className = "region";
+      r.dataset.target = reg.id;
+      r.style.left = (pad + reg.col * tileSize) + "px";
+      r.style.top = (pad + reg.row * tileSize) + "px";
+      r.style.width = (reg.cols * tileSize - 1) + "px";
+      r.style.height = (reg.rows * tileSize - 1) + "px";
+      r.innerHTML = `<span class="pin">📍</span>${{reg.label}}<div class="sub">${{reg.subtitle || ""}}</div>`;
+      wrap.appendChild(r);
+    }});
+  }}
+
+  host.appendChild(wrap);
+  sceneEls[sc.id] = wrap;
+}});
+
+// 计算根场景的 region 中心 (像素坐标, 相对于 host)
+function getRegionCenterPx(region) {{
+  const tileSize = 37;
+  const pad = 12;
+  const cx = pad + (region.col + region.cols / 2) * tileSize - 0.5;
+  const cy = pad + (region.row + region.rows / 2) * tileSize - 0.5;
+  return {{ cx, cy }};
+}}
+
+// 飞行 + 切换场景
+let currentId = null;
+let animating = false;
+
+function showScene(id, opts = {{}}) {{
+  const target = sceneEls[id];
+  if (!target) return;
+  Object.values(sceneEls).forEach(el => {{
+    el.classList.add("hidden");
+    el.classList.remove("fade-in", "fade-out");
+  }});
+  target.classList.remove("hidden");
+  target.classList.add("fade-in");
+  target.style.transform = "translate(0,0) scale(1)";
+  currentId = id;
+  const sc = RESOLVED.scenes.find(s => s.id === id);
+  sceneLabel.textContent = sc ? sc.title : "";
+  sceneLabel.classList.add("show");
+  backBtn.classList.toggle("show", !!(sc && sc.back));
+  history.replaceState({{ id }}, "", "#" + id);
+}}
+
+// 飞行 + 缩放
+function flyTo(targetId) {{
+  if (animating || !sceneEls[targetId]) return;
+  const fromId = currentId;
+  const fromEl = sceneEls[fromId];
+  const toEl = sceneEls[targetId];
+  const fromScene = RESOLVED.scenes.find(s => s.id === fromId);
+  const toScene = RESOLVED.scenes.find(s => s.id === targetId);
+
+  // 决定是 "飞入" (从父→子) 还是 "飞出" (子→父)
+  const isEnter = toScene.back === fromId;
+  if (!isEnter) {{
+    showScene(targetId);
+    return;
+  }}
+
+  // 找父场景中对应的 region
+  const reg = (fromScene.regions || []).find(r => r.id === targetId);
+  if (!reg) {{
+    showScene(targetId);
+    return;
+  }}
+
+  animating = true;
+  const hostRect = host.getBoundingClientRect();
+  const tileSize = 37;
+  const pad = 12;
+  const regCenter = {{
+    cx: pad + (reg.col + reg.cols / 2) * tileSize - 0.5,
+    cy: pad + (reg.row + reg.rows / 2) * tileSize - 0.5,
+  }};
+
+  // world 缩放中心 = host 中心
+  const hostCx = hostRect.width / 2;
+  const hostCy = hostRect.height / 2;
+  const dx = hostCx - regCenter.cx;
+  const dy = hostCy - regCenter.cy;
+
+  // 把 world scene 缩放并平移, 让 region 中心对齐 host 中心
+  fromEl.style.transformOrigin = `${{regCenter.cx}}px ${{regCenter.cy}}px`;
+  fromEl.style.transform = `translate(${{dx}}px, ${{dy}}px) scale(2)`;
+  fromEl.classList.add("fade-out");
+
+  // 飞机从 host 中心飞到 region 中心 (in reverse, 我们要它看起来从中心出发)
+  // 实际上: 进入动画时, 飞机从 region 飞向中心 (飞机已经"到达"目标, 然后离开)
+  // 退出动画时反过来
+  const startX = regCenter.cx, startY = regCenter.cy;
+  const endX = hostCx, endY = hostCy;
+  flight.style.left = (startX - 21) + "px";
+  flight.style.top = (startY - 21) + "px";
+  flight.style.transform = "rotate(0deg) scale(0.5)";
+  flight.classList.add("show");
+
+  requestAnimationFrame(() => {{
+    // 飞机飞到中心
+    flight.style.transition = "left .7s cubic-bezier(.4,.0,.2,1), top .7s cubic-bezier(.4,.0,.2,1), transform .7s ease";
+    flight.style.left = (endX - 21) + "px";
+    flight.style.top = (endY - 21) + "px";
+    flight.style.transform = "rotate(-30deg) scale(1.2)";
+  }});
+
+  setTimeout(() => {{
+    // 切换场景
+    flight.classList.remove("show");
+    fromEl.classList.add("hidden");
+    toEl.classList.remove("hidden");
+    toEl.classList.add("fade-in");
+    toEl.style.transform = "scale(0.85)";
+    requestAnimationFrame(() => {{
+      toEl.style.transition = "transform .35s ease-out";
+      toEl.style.transform = "scale(1)";
+    }});
+    currentId = targetId;
+    backBtn.classList.add("show");
+    const sc = RESOLVED.scenes.find(s => s.id === targetId);
+    sceneLabel.textContent = sc ? sc.title : "";
+    history.pushState({{ id: targetId }}, "", "#" + targetId);
+    animating = false;
+  }}, 720);
+}}
+
+// 点击 region: 飞入
+host.addEventListener("click", (e) => {{
+  const reg = e.target.closest(".region");
+  if (!reg || animating) return;
+  flyTo(reg.dataset.target);
+}});
+
+// Back 按钮: 飞回父场景
+backBtn.addEventListener("click", () => {{
+  if (animating || !currentId) return;
+  const sc = RESOLVED.scenes.find(s => s.id === currentId);
+  if (!sc || !sc.back) return;
+  flyBack(sc.back);
+}});
+
+function flyBack(parentId) {{
+  if (animating) return;
+  const fromEl = sceneEls[currentId];
+  const toEl = sceneEls[parentId];
+  if (!toEl) return;
+  const toScene = RESOLVED.scenes.find(s => s.id === parentId);
+  const regMatch = (toScene.regions || []).find(r => r.id === currentId);
+  if (!regMatch) {{
+    showScene(parentId);
+    return;
+  }}
+
+  animating = true;
+  const hostRect = host.getBoundingClientRect();
+  const hostCx = hostRect.width / 2;
+  const hostCy = hostRect.height / 2;
+  const tileSize = 37;
+  const pad = 12;
+  const regCenter = {{
+    cx: pad + (regMatch.col + regMatch.cols / 2) * tileSize - 0.5,
+    cy: pad + (regMatch.row + regMatch.rows / 2) * tileSize - 0.5,
+  }};
+
+  // 飞机从中心飞到 region
+  flight.style.transition = "none";
+  flight.style.left = (hostCx - 21) + "px";
+  flight.style.top = (hostCy - 21) + "px";
+  flight.style.transform = "rotate(30deg) scale(1.2)";
+  flight.classList.add("show");
+
+  fromEl.classList.add("fade-out");
+  fromEl.style.transform = "scale(0.85)";
+
+  requestAnimationFrame(() => {{
+    flight.style.transition = "left .7s cubic-bezier(.4,.0,.2,1), top .7s cubic-bezier(.4,.0,.2,1), transform .7s ease";
+    flight.style.left = (regCenter.cx - 21) + "px";
+    flight.style.top = (regCenter.cy - 21) + "px";
+    flight.style.transform = "rotate(0deg) scale(0.5)";
+  }});
+
+  setTimeout(() => {{
+    flight.classList.remove("show");
+    fromEl.classList.add("hidden");
+    toEl.classList.remove("hidden");
+    toEl.classList.add("fade-in");
+    toEl.style.transformOrigin = `${{regCenter.cx}}px ${{regCenter.cy}}px`;
+    toEl.style.transform = "translate(0,0) scale(2)";
+    requestAnimationFrame(() => {{
+      toEl.style.transition = "transform .7s cubic-bezier(.4,.0,.2,1)";
+      const dx = hostCx - regCenter.cx;
+      const dy = hostCy - regCenter.cy;
+      toEl.style.transform = `translate(${{dx}}px, ${{dy}}px) scale(2)`;
+      // 然后再回弹到原位
+      setTimeout(() => {{
+        toEl.style.transition = "transform .5s ease-out";
+        toEl.style.transform = "translate(0,0) scale(1)";
+      }}, 50);
+    }});
+    currentId = parentId;
+    const sc = RESOLVED.scenes.find(s => s.id === parentId);
+    sceneLabel.textContent = sc ? sc.title : "";
+    backBtn.classList.toggle("show", !!(sc && sc.back));
+    history.pushState({{ id: parentId }}, "", "#" + parentId);
+    setTimeout(() => {{ animating = false; }}, 750);
+  }}, 720);
+}}
+
+window.addEventListener("popstate", (e) => {{
+  const id = (e.state && e.state.id) || RESOLVED.scenes[0].id;
+  if (id !== currentId) showScene(id);
+}});
+
+// 启动: 显示根场景
+const initialId = (location.hash || "#" + RESOLVED.scenes[0].id).slice(1);
+showScene(initialId);
+showToast("✅ 加载 " + RESOLVED.scenes.length + " 个场景");
+</script>
+</body></html>"""
+
+    with open(output_path, "w") as f:
+        f.write(html)
+
+
+def process_world(base: Path, registry: TileRegistry) -> bool:
+    """读取 input/world_decl.json, 解析每个场景, 输出 world_resolved.json + world_viewer.html。
+
+    Schema:
+      {
+        "name": "...",
+        "scenes": [
+          {
+            "id": "world",        // 唯一 ID
+            "title": "🌍 世界地图",
+            "back": null,         // 父场景 ID, 根场景为 null
+            "rows": 22, "cols": 60,
+            "map": [...],         // 字符 S/G/O/R/r/L
+            "regions": [          // 仅根场景: 可点击的子区域
+              {"id": "china", "label": "中国", "row": 4, "col": 28, "rows": 5, "cols": 9, "subtitle": "..."}
+            ]
+          },
+          // ... 其它子场景 (没有 regions)
+        ]
+      }
+    """
+    input_dir = base / "input"
+    output_dir = base / "output"
+    input_dir.mkdir(exist_ok=True)
+    output_dir.mkdir(exist_ok=True)
+
+    world_path = input_dir / "world_decl.json"
+    if not world_path.exists():
+        print("[world] 跳过: input/world_decl.json 不存在\n")
+        return True
+
+    with open(world_path, "r") as f:
+        world_decl = json.load(f)
+
+    scenes_in = world_decl.get("scenes", [])
+    if not scenes_in:
+        print("[world] 跳过: scenes 为空\n")
+        return True
+
+    # 校验每个场景
+    print(f"[world] 发现 {len(scenes_in)} 个场景, 开始校验:")
+    all_ok = True
+    for sc in scenes_in:
+        sid = sc.get("id", "?")
+        try:
+            grid = parse_map(sc["map"])
+        except Exception as e:
+            print(f"  ❌ {sid}: parse 失败 {e}")
+            all_ok = False
+            continue
+        errors = validate_map(grid)
+        if errors:
+            print(f"  ❌ {sid} ({len(grid)}x{len(grid[0]) if grid else 0}): {len(errors)} 条违规")
+            for e in errors[:5]:
+                print(f"      • {e}")
+            if len(errors) > 5:
+                print(f"      ... ({len(errors) - 5} more)")
+            all_ok = False
+        else:
+            print(f"  ✅ {sid} ({len(grid)}x{len(grid[0]) if grid else 0})")
+    if not all_ok:
+        print("[world] 校验失败, 不写产物\n")
+        return False
+
+    # 解析每个场景
+    scenes_out = []
+    for sc in scenes_in:
+        grid = parse_map(sc["map"])
+        cells = generate_desc_json(grid, registry)
+        scene_obj = {
+            "id": sc["id"],
+            "title": sc.get("title", sc["id"]),
+            "back": sc.get("back"),
+            "rows": len(grid),
+            "cols": len(grid[0]) if grid else 0,
+            "grid": cells,
+        }
+        if "regions" in sc:
+            scene_obj["regions"] = sc["regions"]
+        scenes_out.append(scene_obj)
+
+    resolved = {"name": world_decl.get("name", "world"), "scenes": scenes_out}
+    resolved_path = output_dir / "world_resolved.json"
+    with open(resolved_path, "w") as f:
+        json.dump(resolved, f, indent=2, ensure_ascii=False)
+
+    html_path = output_dir / "world_viewer.html"
+    generate_world_viewer_html(resolved, registry, str(html_path))
+
+    print(f"\n[world] 资源 JSON: {resolved_path}")
+    print(f"[world] HTML 查看器: {html_path}\n")
+
+    # Tile 统计
+    all_descs = [cell["desc"] for sc in scenes_out for row in sc["grid"] for cell in row]
+    print("Tile 使用统计 (world):")
+    for desc, cnt in Counter(all_descs).most_common():
+        marker = "  " if desc in registry else "✗ "
+        print(f"  {marker}{desc}: {cnt}")
+
+    missing = [d for d in set(all_descs) if d not in registry]
+    if missing:
+        print("\n⚠️ world 注册表缺失 (HTML 中标红显示):")
+        for d in sorted(missing):
+            print(f"  - {d}")
+    return True
+
+
+def main():
+    base = Path(__file__).parent
+    registry = parse_tile_registry(str(base / "assets_map_check.json"))
+
+    print("=" * 60)
+    print("map_builder v4 — 单场景 + 多场景世界")
+    print("=" * 60 + "\n")
+
+    print(">>> 处理单场景 (boundary test map)")
+    process_single(base, registry)
+
+    print("\n>>> 处理多场景 (world)")
+    process_world(base, registry)
 
 
 if __name__ == "__main__":
