@@ -2,6 +2,7 @@
 # Run `just` to list all commands.
 
 PORT := "8765"
+PY := "uv run python3"
 
 default:
     @just --list
@@ -12,14 +13,14 @@ default:
 
 # local:  read input/<name>_decl.json, write output/<name>/<name>_decl.json
 s1-local name:
-    python3 stage1_source.py local {{name}}
+    {{PY}} stage1_source.py local {{name}}
 
 # osm:    pull Overpass data, rasterize, write decl to output/<city>_<size>km/
 s1-osm city size_km name="":
     @if [ -z "{{name}}" ]; then \
-        python3 stage1_source.py osm --city {{city}} --size-km {{size_km}}; \
+        {{PY}} stage1_source.py osm --city {{city}} --size-km {{size_km}}; \
     else \
-        python3 stage1_source.py osm --city {{city}} --size-km {{size_km}} --name {{name}}; \
+        {{PY}} stage1_source.py osm --city {{city}} --size-km {{size_km}} --name {{name}}; \
     fi
 
 # ============================================================
@@ -27,13 +28,13 @@ s1-osm city size_km name="":
 # ============================================================
 
 s2 name:
-    python3 stage2_grid.py {{name}}
+    {{PY}} stage2_grid.py {{name}}
 
 s3 name:
-    python3 stage3_resolved.py {{name}}
+    {{PY}} stage3_resolved.py {{name}}
 
 s4 name:
-    python3 stage4_html.py {{name}}
+    {{PY}} stage4_html.py {{name}}
 
 # ============================================================
 # One-shot: full pipeline
@@ -55,20 +56,20 @@ build-osm city size_km:
 # ============================================================
 
 serve:
-    @python3 -m http.server {{PORT}} --bind 127.0.0.1
+    @{{PY}} -m http.server {{PORT}} --bind 127.0.0.1
 
 view name: (view-auto name)
 view-auto name:
     @# Pick world_viewer.html vs <name>_viewer.html based on kind in grid.json
     @if [ -f output/{{name}}/{{name}}_grid.json ] && \
-         python3 -c "import json,sys; d=json.load(open('output/{{name}}/{{name}}_grid.json')); sys.exit(0 if d.get('kind')=='world' else 1)"; then \
-        HTML="output/{{name}}/world_viewer.html"; \
+         {{PY}} -c "import json,sys; d=json.load(open('output/{{name}}/{{name}}_grid.json')); sys.exit(0 if d.get('kind')=='world' else 1)"; then \
+        export HTML="output/{{name}}/world_viewer.html"; \
     else \
-        HTML="output/{{name}}/{{name}}_viewer.html"; \
-    fi
-    @curl -sf -o /dev/null http://127.0.0.1:{{PORT}}/ 2>/dev/null || \
-        (python3 -m http.server {{PORT}} --bind 127.0.0.1 >/dev/null 2>&1 &)
-    @open "http://127.0.0.1:{{PORT}}/$HTML"
+        export HTML="output/{{name}}/{{name}}_viewer.html"; \
+    fi && \
+    curl -sf -o /dev/null http://127.0.0.1:{{PORT}}/ 2>/dev/null || \
+        ({{PY}} -m http.server {{PORT}} --bind 127.0.0.1 >/dev/null 2>&1 &) && \
+    open "http://127.0.0.1:{{PORT}}/$HTML"
 
 # ============================================================
 # Cleanup
@@ -82,8 +83,9 @@ clean:
 # ============================================================
 
 test:
-    python3 -m pytest tests/ -v
+    {{PY}} -m pytest tests/ -v
 
 smoke:
+    @cp tests/fixtures/smoke_test_decl.json input/smoke_test_decl.json
     @just build smoke_test
     @just view smoke_test
