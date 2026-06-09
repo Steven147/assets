@@ -1,98 +1,89 @@
-PORT := "8765"
+# Map Pipeline — 4 stages: source / grid / resolved / html
+# Run `just` to list all commands.
 
-# OSM 工作流默认参数
-OSM_CITY := "shanghai"
-OSM_SIZE_KM := "10"
-OSM_OUT := "output"
+PORT := "8765"
 
 default:
     @just --list
 
 # ============================================================
-# 原始字符地图工作流 (map_builder.py 自带的测试图)
+# Stage 1: source
 # ============================================================
 
-# 构建地图: 解析声明 → 生成 map_resolved.json + map_viewer.html
-build:
-    python3 map_builder.py
+# local:  read input/<name>_decl.json, write output/<name>/<name>_decl.json
+s1-local name:
+    python3 stage1_source.py local {{name}}
 
-# build 别名
-run: build
+# osm:    pull Overpass data, rasterize, write decl to output/<city>_<size>km/
+s1-osm city size_km name="":
+    @if [ -z "{{name}}" ]; then \
+        python3 stage1_source.py osm --city {{city}} --size-km {{size_km}}; \
+    else \
+        python3 stage1_source.py osm --city {{city}} --size-km {{size_km}} --name {{name}}; \
+    fi
 
-# 启动本地 HTTP 服务 (在 game 根目录, 这样 ../ 图片也能加载)
+# ============================================================
+# Stage 2-4
+# ============================================================
+
+s2 name:
+    python3 stage2_grid.py {{name}}
+
+s3 name:
+    python3 stage3_resolved.py {{name}}
+
+s4 name:
+    python3 stage4_html.py {{name}}
+
+# ============================================================
+# One-shot: full pipeline
+# ============================================================
+
+# build: stage1=local, then 2/3/4
+build name: (s1-local name) (s2 name) (s3 name) (s4 name)
+
+# build-osm: stage1=osm, then 2/3/4
+build-osm city size_km:
+    @NAME="{{city}}_{{size_km}}km"; \
+    just s1-osm {{city}} {{size_km}} "$NAME"; \
+    just s2 "$NAME"; \
+    just s3 "$NAME"; \
+    just s4 "$NAME"
+
+# ============================================================
+# View: serve + open
+# ============================================================
+
 serve:
-    @echo "Serving on http://localhost:{{PORT}}/  (Ctrl+C to stop)"
     @python3 -m http.server {{PORT}} --bind 127.0.0.1
 
-# 构建后, 在已运行的 server 上打开地图查看器 (需先在另一终端跑 `just serve`)
-view-map:
-    @if ! curl -sf -o /dev/null http://localhost:{{PORT}}/; then \
-        echo "⚠️  本地 server 未运行, 请先在另一个终端执行: just serve"; \
-        exit 1; \
+view name: (view-auto name)
+view-auto name:
+    @# Pick world_viewer.html vs <name>_viewer.html based on kind in grid.json
+    @if [ -f output/{{name}}/{{name}}_grid.json ] && \
+         python3 -c "import json,sys; d=json.load(open('output/{{name}}/{{name}}_grid.json')); sys.exit(0 if d.get('kind')=='world' else 1)"; then \
+        HTML="output/{{name}}/world_viewer.html"; \
+    else \
+        HTML="output/{{name}}/{{name}}_viewer.html"; \
     fi
-    open "http://localhost:{{PORT}}/output/map_viewer.html"
+    @curl -sf -o /dev/null http://127.0.0.1:{{PORT}}/ 2>/dev/null || \
+        (python3 -m http.server {{PORT}} --bind 127.0.0.1 >/dev/null 2>&1 &)
+    @open "http://127.0.0.1:{{PORT}}/$HTML"
 
-# 一键模式: 后台启动 server, 打开浏览器, server 留作守护进程
-view-map-bg:
-    @if ! curl -sf -o /dev/null http://localhost:{{PORT}}/; then \
-        echo "Starting background server on :{{PORT}}..."; \
-        (python3 -m http.server {{PORT}} --bind 127.0.0.1 >/dev/null 2>&1 &); \
-        sleep 0.5; \
-    fi
-    open "http://localhost:{{PORT}}/output/map_viewer.html"
+# ============================================================
+# Cleanup
+# ============================================================
 
-view-asset:
-    @if ! curl -sf -o /dev/null http://localhost:{{PORT}}/; then \
-        echo "Starting background server on :{{PORT}}..."; \
-        (python3 -m http.server {{PORT}} --bind 127.0.0.1 >/dev/null 2>&1 &); \
-        sleep 0.5; \
-    fi
-    open "http://localhost:{{PORT}}/assets_catalog.html"
-
-# 清理生成产物 (回收站)
 clean:
-    trash input/map_decl.json output/map_resolved.json output/map_viewer.html 2>/dev/null || true
+    @trash output 2>/dev/null || rm -rf output
 
 # ============================================================
-# OSM → 1000×1000 游戏地图工作流
-# 顺序: osm-fetch → osm-build → osm-viewer
-# 产物全部落到 output/<city>_<size>km/ 同一个文件夹
-# 预置城市: shanghai beijing tokyo paris london newyork hangzhou shenzhen guangzhou
-# 用法: just osm-fetch shanghai 5
-#       just osm-all beijing 20
+# Tests
 # ============================================================
 
-# 1) 拉取 OSM 真实数据 → decl JSON + folium/matplotlib 可视化
-osm-fetch city=OSM_CITY size_km=OSM_SIZE_KM:
-    @mkdir -p {{OSM_OUT}}/{{city}}_{{size_km}}km
-    @.venv/bin/python3 osm_to_map.py \
-        --city {{city}} --size-km {{size_km}} \
-        --output-dir {{OSM_OUT}}/{{city}}_{{size_km}}km
-    @echo ""
-    @echo "📂 {{OSM_OUT}}/{{city}}_{{size_km}}km/:"
-    @ls -la {{OSM_OUT}}/{{city}}_{{size_km}}km/
+test:
+    python3 -m pytest tests/ -v
 
-# 2) decl → map_resolved.json + map_viewer.html (调用 map_builder 管线)
-osm-build city=OSM_CITY size_km=OSM_SIZE_KM:
-    @.venv/bin/python3 osm_build.py {{OSM_OUT}}/{{city}}_{{size_km}}km
-
-# 3) 打开 folium 真实地图 (HTML, 含 lat/lon)
-osm-real city=OSM_CITY size_km=OSM_SIZE_KM:
-    @open {{OSM_OUT}}/{{city}}_{{size_km}}km/*_real.html
-
-# 4) 打开 matplotlib 游戏地图 (PNG, 1000×1000 字符网格)
-osm-png city=OSM_CITY size_km=OSM_SIZE_KM:
-    @open {{OSM_OUT}}/{{city}}_{{size_km}}km/*_game.png
-
-# 5) 启动 server + 打开 HTML 查看器 (游戏瓦片)
-osm-viewer city=OSM_CITY size_km=OSM_SIZE_KM:
-    @just view-map-bg
-    @sleep 0.3
-    @open "http://localhost:{{PORT}}/{{OSM_OUT}}/{{city}}_{{size_km}}km/map_viewer.html"
-
-# 6) 一键: fetch → build → viewer
-osm-all city=OSM_CITY size_km=OSM_SIZE_KM: (osm-fetch city size_km) (osm-build city size_km) (osm-viewer city size_km)
-
-# 清理所有 OSM 输出
-osm-clean:
-    @trash {{OSM_OUT}} 2>/dev/null || rm -rf {{OSM_OUT}}
+smoke:
+    @just build smoke_test
+    @just view smoke_test
