@@ -43,7 +43,7 @@ h2{margin-bottom:8px}
 <p class="subtitle">通过本地 server 自动加载 (推荐: <code>just view {{ name }}</code>)，或手动 Import</p>
 <div class="toolbar">
   <button onclick="document.getElementById('jsonFileInput').click()">📂 Import JSON</button>
-  <a class="default-link" href="{{ name }}_resolved.json" target="_blank">🔗 {{ name }}_resolved.json</a>
+  <a class="default-link" href="output/{{ name }}/{{ name }}_resolved.json" target="_blank">🔗 {{ name }}_resolved.json</a>
   <input type="file" id="jsonFileInput" accept=".json" style="display:none">
 </div>
 <div id="root"><div class="empty">Loading…</div></div>
@@ -122,7 +122,7 @@ document.getElementById('jsonFileInput').addEventListener('change', function(e) 
       '<div class="empty">⚠️ 你正在通过 <code>file://</code> 打开此页面。<br>推荐: 在 game/ 目录运行 <code>just view {{ name }}</code>，或手动 <b>📂 Import JSON</b>。</div>';
     return;
   }
-  fetch('{{ name }}_resolved.json')
+  fetch('output/{{ name }}/{{ name }}_resolved.json')
     .then(r => r.ok ? r.json() : Promise.reject(r.status))
     .then(data => { render(data); showToast('✅ Auto-loaded {{ name }}_resolved.json'); })
     .catch(err => {
