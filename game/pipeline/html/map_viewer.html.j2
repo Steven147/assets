@@ -124,7 +124,7 @@ document.getElementById('jsonFileInput').addEventListener('change', function(e) 
   }
   fetch('output/{{ name }}/{{ name }}_resolved.json')
     .then(r => r.ok ? r.json() : Promise.reject(r.status))
-    .then(data => { render(data); showToast('✅ Auto-loaded {{ name }}_resolved.json'); })
+    .then(data => { render(data.grid); showToast('✅ Auto-loaded {{ name }}_resolved.json'); })
     .catch(err => {
       document.getElementById('root').innerHTML =
         '<div class="empty">未自动找到 <code>{{ name }}_resolved.json</code> (' + err + ')。<br>请使用上面 <b>📂 Import JSON</b> 手动选择。</div>';
