@@ -2,7 +2,7 @@
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <base href="/">
-<title>World Map Viewer · {{ resolved.name }}</title>
+<title>World Map Viewer · {{ name }}</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0e27;color:#eee;font-family:'Courier New',monospace;
@@ -65,7 +65,7 @@ h2{margin-bottom:4px;font-size:18px}
   pointer-events:none;z-index:15;opacity:0;transition:opacity .35s}
 .scene-label.show{opacity:1}
 </style></head><body>
-<h2>🌍 {{ resolved.name }}</h2>
+<h2>🌍 {{ name }}</h2>
 <p class="subtitle">点击地图上的红色区域 → 飞入子场景 · 按 ← Back 返回</p>
 <div class="toolbar">
   <button class="back" id="backBtn">← 返回世界</button>
@@ -77,8 +77,8 @@ h2{margin-bottom:4px;font-size:18px}
 <div class="legend"><h3>图例</h3>{{ legend_html | safe }}</div>
 <div class="toast" id="toast"></div>
 <script>
-const RESOLVED = {{ resolved_json | safe }};
-const COLORS = {S:"#1a5276",G:"#27ae60",O:"#e67e22",R:"#2ecc71",r:"#f39c12",L:"#6a9fb5"};
+const REGISTRY = {{ registry_json | safe }};
+const RESOLVED = null; // loaded at runtime
 
 const $ = (id) => document.getElementById(id);
 const host = $("sceneHost");
@@ -98,9 +98,6 @@ function resolveSrc(fp) {
   return fp.startsWith('/') ? fp : '/' + fp;
 }
 
-const scenes = RESOLVED.scenes;
-const sceneById = Object.fromEntries(scenes.map(s => [s.id, s]));
-
 function renderSceneEl(scene) {
   const cols = scene.cols;
   const el = document.createElement('div');
@@ -109,20 +106,22 @@ function renderSceneEl(scene) {
   el.style.gridTemplateColumns = 'repeat(' + cols + ', 36px)';
   let html = '';
   const missing = {};
-  scene.grid.forEach((row, r) => {
-    row.forEach((cell, c) => {
-      const ch = cell.char, desc = cell.desc, fp = cell.file;
-      const bg = COLORS[ch] || '#333';
+  scene.map.forEach((row, r) => {
+    for (let c = 0; c < row.length; c++) {
+      const code = row[c];
+      const tile = REGISTRY[code];
+      const desc = tile ? tile.desc : code;
+      const fp = tile ? tile.file : '';
       if (fp) {
         html += '<div class="tile" title="' + desc + ' [' + r + ',' + c + ']">' +
                 '<img src="' + resolveSrc(fp) + '">' +
-                '<span class="tag">' + ch + '</span></div>';
+                '<span class="tag">' + code + '</span></div>';
       } else {
         missing[desc] = (missing[desc] || 0) + 1;
-        html += '<div class="tile" style="background:' + bg + '" title="MISSING: ' + desc + '">' +
+        html += '<div class="tile" style="background:#333" title="MISSING: ' + desc + '">' +
                 '<span class="miss">' + desc + '</span></div>';
       }
-    });
+    }
   });
   el.innerHTML = html;
   // regions (root scene only)
@@ -145,7 +144,7 @@ function renderSceneEl(scene) {
 
 let currentScene = null;
 function showScene(sid, withBack = false) {
-  const scene = sceneById[sid];
+  const scene = scenesById[sid];
   if (!scene) return;
   if (currentScene) {
     const old = document.getElementById('scene-' + currentScene);
@@ -175,8 +174,21 @@ window.onpopstate = (e) => {
   showScene(sid, sid !== scenes.find(s => s.back == null)?.id);
 };
 
-// Init: show root scene
-const initial = location.hash ? location.hash.slice(1) : scenes.find(s => s.back == null)?.id;
-showScene(initial, location.hash !== '');
+// Load resolved data at runtime (no more inline blob)
+let scenes = [];
+let scenesById = {};
+
+fetch('output/{{ name }}/{{ name }}_resolved.json')
+  .then(r => r.ok ? r.json() : Promise.reject(r.status))
+  .then(data => {
+    scenes = data.scenes || [];
+    scenesById = Object.fromEntries(scenes.map(s => [s.id, s]));
+    const initial = location.hash ? location.hash.slice(1) : scenes.find(s => s.back == null)?.id;
+    if (initial) showScene(initial, location.hash !== '');
+    showToast('✅ Loaded ' + scenes.length + ' scene(s)');
+  })
+  .catch(err => {
+    showToast('❌ Failed to load world: ' + err, true);
+  });
 </script>
 </body></html>

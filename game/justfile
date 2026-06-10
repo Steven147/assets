@@ -78,6 +78,10 @@ view-auto name:
 clean:
     @trash output 2>/dev/null || rm -rf output
 
+# Remove cache (Overpass raw data). Separate from clean.
+clean-cache:
+    @trash cache 2>/dev/null || rm -rf cache
+
 # ============================================================
 # Tests
 # ============================================================

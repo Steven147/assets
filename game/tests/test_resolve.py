@@ -1,6 +1,6 @@
 # tests/test_resolve.py
 from pipeline.grid import parse_map
-from pipeline.resolve import resolve_tile, generate_desc_json
+from pipeline.resolve import resolve_tile, build_compact_grid
 from pipeline.registry import TileRegistry
 
 
@@ -82,13 +82,56 @@ def test_road_cross() -> None:
 def test_generate_desc_json_shape() -> None:
     grid = parse_map(["SSS", "SGS", "SSS"])
     registry = make_registry()
-    result = generate_desc_json(grid, registry)
-    # 3x3 grid, each cell is a dict with char/desc/file keys
-    assert len(result) == 3
-    assert len(result[0]) == 3
-    assert set(result[0][0].keys()) == {"char", "desc", "file"}
-    assert result[0][0]["char"] == "S"
-    assert result[1][1]["char"] == "G"
-    assert result[1][1]["desc"] == "W-y-g-island-2"
+    code_to_tile, encoded = build_compact_grid(grid, registry)
+    # 3x3 grid, encoded as list of strings (matches decl.json `map` shape)
+    assert len(encoded) == 3
+    assert all(isinstance(row, str) and len(row) == 3 for row in encoded)
+    # Sea (S) row is uniform
+    assert encoded[0] == encoded[1] == encoded[2] or (
+        encoded[0][0] == encoded[0][1] == encoded[0][2]
+    )  # all-S row
+    assert encoded[1][1] != encoded[0][0]  # G-island vs S
+    # The G island desc should be present in the registry
+    descs = {v["desc"] for v in code_to_tile.values()}
+    assert "W-y-g-island-2" in descs
     # file is empty when registry is empty
-    assert result[1][1]["file"] == ""
+    code_for_g_island = next(c for c, t in code_to_tile.items() if t["desc"] == "W-y-g-island-2")
+    assert code_to_tile[code_for_g_island]["file"] == ""
+    # All cells in the encoded grid map back to the original descs
+    for row in encoded:
+        for ch in row:
+            assert ch in code_to_tile
+
+
+def test_build_compact_grid_codes_are_sorted_by_desc() -> None:
+    # Two cells that resolve to two descs; sort order should be alphabetical
+    grid = parse_map(["SS", "GG"])  # S row, G row
+    registry = make_registry()
+    code_to_tile, _ = build_compact_grid(grid, registry)
+    descs = [t["desc"] for t in code_to_tile.values()]
+    assert descs == sorted(descs)
+
+
+def test_build_compact_grid_rejects_more_than_62_unique_descs() -> None:
+    # A grid larger than 62 distinct descs is impossible to encode with one char.
+    # We construct a 63x1 grid of unique chars (impossible in practice — VALID_CHARS
+    # is only 6 — so instead we patch the resolve function).
+    grid = parse_map(["S" * 1] * 1)
+    registry = make_registry()
+    import pytest
+    from pipeline import resolve as resolve_mod
+    calls = {"n": 0}
+
+    def fake_resolve(_grid, _r, _c):
+        calls["n"] += 1
+        return f"desc-{calls['n']:03d}"
+
+    original = resolve_mod.resolve_tile
+    resolve_mod.resolve_tile = fake_resolve
+    try:
+        # Force a 63-cell grid to elicit 63 unique descs
+        grid_63 = [["S"] for _ in range(63)]
+        with pytest.raises(ValueError, match="62"):
+            build_compact_grid(grid_63, registry)
+    finally:
+        resolve_mod.resolve_tile = original

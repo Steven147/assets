@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stage 3: grid -> output/<name>/<name>_resolved.json (desc + file per cell)."""
+"""Stage 3: grid -> output/<name>/<name>_resolved.json + <name>_registry.json."""
 import argparse
 import json
 import sys
@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from pipeline.registry import parse_tile_registry
-from pipeline.resolve import generate_desc_json
+from pipeline.resolve import build_compact_grid
 from pipeline.world import resolve_world_scenes
 
 
@@ -25,20 +25,28 @@ def main() -> int:
 
     if grid_doc.get("kind", "single") == "single":
         char_grid = [[c["char"] for c in row] for row in grid_doc["grid"]]
+        code_to_tile, encoded = build_compact_grid(char_grid, registry)
         resolved = {
             "name": grid_doc["name"],
             "kind": "single",
             "rows": grid_doc["rows"],
             "cols": grid_doc["cols"],
-            "grid": generate_desc_json(char_grid, registry),
+            "map": encoded,
         }
+        registry_data = code_to_tile
     else:
-        resolved = resolve_world_scenes(grid_doc, registry)
+        resolved, code_to_tile = resolve_world_scenes(grid_doc, registry)
+        registry_data = code_to_tile
 
+    # Write resolved.json (compact map) and registry.json (code→desc+file)
     out_path = out_dir / f"{args.name}_resolved.json"
     out_path.write_text(json.dumps(resolved, ensure_ascii=False, indent=2),
                         encoding="utf-8")
+    reg_path = out_dir / f"{args.name}_registry.json"
+    reg_path.write_text(json.dumps(registry_data, ensure_ascii=False, indent=2),
+                        encoding="utf-8")
     print(f"✅ stage3 → {out_path}")
+    print(f"✅ stage3 → {reg_path}")
     return 0
 
 

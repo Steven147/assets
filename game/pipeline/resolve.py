@@ -5,6 +5,11 @@ from pipeline.registry import TileRegistry
 LAND_CHARS = {"G", "O", "R", "r", "L"}
 ROAD_CHARS = {"R", "r"}
 
+# 62 single-char codes: '0'-'9' + 'A'-'Z' + 'a'-'z'. Sorted alphabetically when
+# assigned to descs, so the same desc set always produces the same mapping.
+CODE_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+assert len(CODE_CHARS) == 62
+
 
 def _is_sea(ch: str) -> bool:
     return ch == "S"
@@ -88,6 +93,7 @@ def resolve_tile(grid, r, c) -> str:
 
 
 def generate_desc_json(grid, registry: TileRegistry) -> list[list[dict]]:
+    """Deprecated: per-cell {char,desc,file} dict list. Replaced by build_compact_grid."""
     result = []
     for r, row in enumerate(grid):
         line = []
@@ -96,3 +102,39 @@ def generate_desc_json(grid, registry: TileRegistry) -> list[list[dict]]:
             line.append({"char": grid[r][c], "desc": desc, "file": registry.get(desc, "")})
         result.append(line)
     return result
+
+
+def build_compact_grid(grid, registry: TileRegistry) -> tuple[dict, list[str]]:
+    """Resolve a char grid to (code_to_tile, encoded_grid).
+
+    encoded_grid is a list of single-char strings (one per row, same shape as
+    decl.json's ``map`` field). code_to_tile maps each code to
+    ``{"desc": ..., "file": registry.get(desc, "")}``.
+
+    Descs are sorted alphabetically before code assignment, so the same desc
+    set always produces the same mapping. Raises ``ValueError`` if more than
+    62 unique descs are encountered.
+    """
+    # 1. Resolve all cells to descs.
+    desc_grid: list[list[str]] = [
+        [resolve_tile(grid, r, c) for c in range(len(grid[r]))]
+        for r in range(len(grid))
+    ]
+    unique_descs = sorted({d for row in desc_grid for d in row})
+    if len(unique_descs) > len(CODE_CHARS):
+        raise ValueError(
+            f"build_compact_grid: {len(unique_descs)} unique descs exceeds "
+            f"the {len(CODE_CHARS)}-char single-code budget; need 2-char encoding"
+        )
+    # 3. Build code->{desc,file} table.
+    code_to_tile: dict[str, dict] = {
+        CODE_CHARS[i]: {"desc": d, "file": registry.get(d, "")}
+        for i, d in enumerate(unique_descs)
+    }
+    # 4. Encode grid: replace each desc with its single-char code, then join
+    #    each row into a string (matches decl.json's `map` field shape).
+    desc_to_code = {t["desc"]: code for code, t in code_to_tile.items()}
+    encoded: list[str] = [
+        "".join(desc_to_code[d] for d in row) for row in desc_grid
+    ]
+    return code_to_tile, encoded

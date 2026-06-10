@@ -23,6 +23,11 @@ PRESET_CITIES = {
     "hangzhou":  {"name": "Hangzhou",   "lat": 30.2741, "lon": 120.1551},
     "shenzhen":  {"name": "Shenzhen",   "lat": 22.5431, "lon": 114.0579},
     "guangzhou": {"name": "Guangzhou",  "lat": 23.1291, "lon": 113.2644},
+    "xiamen":    {"name": "Xiamen",     "lat": 24.4798, "lon": 118.0894},
+    "xian":      {"name": "Xi'an",      "lat": 34.3416, "lon": 108.9398},
+    "bangkok":   {"name": "Bangkok",    "lat": 13.7563, "lon": 100.5018},
+    "weifang":   {"name": "Weifang",    "lat": 36.7068, "lon": 119.1619},
+    "syracuse":  {"name": "Syracuse",   "lat": 43.0481, "lon": -76.1474},
 }
 
 POI_TAGS = {
@@ -161,22 +166,56 @@ out skel qt;
 """
 
 
+def _cache_path(bbox: dict) -> Path:
+    """Return a stable cache file path for a given bbox."""
+    import hashlib
+    key = f"{bbox['min_lat']:.6f},{bbox['min_lon']:.6f},{bbox['max_lat']:.6f},{bbox['max_lon']:.6f}"
+    h = hashlib.sha256(key.encode()).hexdigest()[:16]
+    return Path("cache") / f"overpass_{h}.json"
+
+
 def _fetch_overpass_with_fallback(bbox: dict) -> dict:
+    # Check cache first
+    cache = _cache_path(bbox)
+    if cache.exists():
+        return json.loads(cache.read_text(encoding="utf-8"))
+
     query = build_overpass_query(bbox)
     data = urllib.parse.urlencode({"data": query}).encode("utf-8")
     last_err: Optional[Exception] = None
-    for endpoint in OVERPASS_ENDPOINTS:
-        try:
-            req = urllib.request.Request(
-                endpoint, data=data,
-                headers={"User-Agent": "osm-to-map/2.0 (game dev)"},
-            )
-            with urllib.request.urlopen(req, timeout=180) as resp:
-                payload = json.loads(resp.read().decode("utf-8"))
-            return payload
-        except Exception as e:
-            last_err = e
-    raise RuntimeError(f"all Overpass endpoints failed: {last_err}")
+    # Outer retry: when an endpoint 429s or times out the rate-limit usually
+    # clears in 30-60s, so try the whole endpoint list a few times before
+    # giving up. Sleep between rounds to be a good Overpass citizen.
+    for round_idx in range(4):
+        for endpoint in OVERPASS_ENDPOINTS:
+            try:
+                req = urllib.request.Request(
+                    endpoint, data=data,
+                    headers={"User-Agent": "osm-to-map/2.0 (game dev)"},
+                )
+                with urllib.request.urlopen(req, timeout=180) as resp:
+                    payload = json.loads(resp.read().decode("utf-8"))
+                elems = payload.get("elements", [])
+                ways = sum(1 for e in elems if e.get("type") == "way")
+                nodes = sum(1 for e in elems if e.get("type") == "node")
+                # Sanity check: empty/sparse response means rate-limit or
+                # server returned a partial/empty payload — try next endpoint.
+                if len(elems) < 100 or ways < 20 or nodes < 5:
+                    last_err = RuntimeError(
+                        f"{endpoint} sparse response "
+                        f"(elems={len(elems)}, ways={ways}, nodes={nodes})"
+                    )
+                    continue
+                # Write to cache
+                cache.parent.mkdir(parents=True, exist_ok=True)
+                cache.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+                return payload
+            except Exception as e:
+                last_err = e
+        # All endpoints failed this round — wait before next round.
+        if round_idx < 3:
+            time.sleep(45)
+    raise RuntimeError(f"all Overpass endpoints failed after 4 rounds: {last_err}")
 
 
 def _index_elements(overpass_data: dict):

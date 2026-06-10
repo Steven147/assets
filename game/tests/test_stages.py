@@ -50,7 +50,13 @@ def test_full_pipeline_smoke(stage_layout) -> None:
     )
     assert resolved["kind"] == "single"
     assert resolved["rows"] == 6
-    assert all("desc" in c for row in resolved["grid"] for c in row)
+    assert "map" in resolved and isinstance(resolved["map"], list)
+    # Registry file also written
+    registry = json.loads(
+        (out / "output" / NAME / f"{NAME}_registry.json").read_text(encoding="utf-8")
+    )
+    assert isinstance(registry, dict)
+    assert len(registry) > 0
 
     _stage(NAME, "stage4_html.py")
     assert (out / "output" / NAME / f"{NAME}_viewer.html").exists()

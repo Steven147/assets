@@ -40,11 +40,10 @@ h2{margin-bottom:8px}
 .toast.error{color:#ff6b6b;border-color:#ff6b6b}
 </style></head><body>
 <h2>🗺️ Tile Map Viewer · {{ name }}</h2>
-<p class="subtitle">通过本地 server 自动加载 (推荐: <code>just view {{ name }}</code>)，或手动 Import</p>
+<p class="subtitle">通过本地 server 自动加载 (推荐: <code>just view {{ name }}</code>)</p>
 <div class="toolbar">
-  <button onclick="document.getElementById('jsonFileInput').click()">📂 Import JSON</button>
   <a class="default-link" href="output/{{ name }}/{{ name }}_resolved.json" target="_blank">🔗 {{ name }}_resolved.json</a>
-  <input type="file" id="jsonFileInput" accept=".json" style="display:none">
+  <a class="default-link" href="output/{{ name }}/{{ name }}_registry.json" target="_blank">📋 registry</a>
 </div>
 <div id="root"><div class="empty">Loading…</div></div>
 <div class="legend"><h3>图例</h3>{{ legend_html | safe }}</div>
@@ -52,6 +51,7 @@ h2{margin-bottom:8px}
 <div class="toast" id="toast"></div>
 <script>
 const COLORS = {{ colors_js | safe }};
+const REGISTRY = {{ registry_json | safe }};
 function showToast(msg, isError) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -63,8 +63,9 @@ function resolveSrc(fp) {
   // <base href="/"> strips the file:// origin, so the relative path is from game/.
   return fp.startsWith('/') ? fp : '/' + fp;
 }
-function render(grid) {
-  const cols = grid[0] ? grid[0].length : 0;
+function render(mapData) {
+  // mapData is a list of strings (one per row), each char is a registry code.
+  const cols = mapData[0] ? mapData[0].length : 0;
   const root = document.getElementById('root');
   root.innerHTML = '';
   const map = document.createElement('div');
@@ -72,20 +73,23 @@ function render(grid) {
   map.style.gridTemplateColumns = 'repeat(' + cols + ', 48px)';
   const missing = {};
   let html = '';
-  grid.forEach((row, r) => {
-    row.forEach((cell, c) => {
-      const ch = cell.char, desc = cell.desc, fp = cell.file;
-      const bg = COLORS[ch] || '#333';
+  mapData.forEach((row, r) => {
+    for (let c = 0; c < row.length; c++) {
+      const code = row[c];
+      const tile = REGISTRY[code];
+      const desc = tile ? tile.desc : code;
+      const fp = tile ? tile.file : '';
+      const bg = '#333';
       if (fp) {
         html += '<div class="tile" title="' + desc + ' [' + r + ',' + c + ']">' +
                 '<img src="' + resolveSrc(fp) + '">' +
-                '<span class="tag">' + ch + '</span></div>';
+                '<span class="tag">' + code + '</span></div>';
       } else {
         missing[desc] = (missing[desc] || 0) + 1;
         html += '<div class="tile" style="background:' + bg + '" title="MISSING: ' + desc + ' [' + r + ',' + c + ']">' +
                 '<span class="miss">' + desc + '</span></div>';
       }
-    });
+    }
   });
   map.innerHTML = html;
   root.appendChild(map);
@@ -102,32 +106,18 @@ function render(grid) {
     stats.className = ''; stats.innerHTML = '';
   }
 }
-document.getElementById('jsonFileInput').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      if (!Array.isArray(data) || !Array.isArray(data[0])) throw new Error('expected 2D array of cells');
-      render(data);
-      showToast('✅ Loaded ' + data.length + '×' + (data[0]||[]).length);
-    } catch(err) { showToast('❌ Invalid JSON: ' + err.message, true); }
-  };
-  reader.readAsText(file);
-});
 (function autoload() {
   if (location.protocol === 'file:') {
     document.getElementById('root').innerHTML =
-      '<div class="empty">⚠️ 你正在通过 <code>file://</code> 打开此页面。<br>推荐: 在 game/ 目录运行 <code>just view {{ name }}</code>，或手动 <b>📂 Import JSON</b>。</div>';
+      '<div class="empty">⚠️ 你正在通过 <code>file://</code> 打开此页面。<br>推荐: 在 game/ 目录运行 <code>just view {{ name }}</code>。</div>';
     return;
   }
   fetch('output/{{ name }}/{{ name }}_resolved.json')
     .then(r => r.ok ? r.json() : Promise.reject(r.status))
-    .then(data => { render(data.grid); showToast('✅ Auto-loaded {{ name }}_resolved.json'); })
+    .then(data => { render(data.map); showToast('✅ Auto-loaded {{ name }}'); })
     .catch(err => {
       document.getElementById('root').innerHTML =
-        '<div class="empty">未自动找到 <code>{{ name }}_resolved.json</code> (' + err + ')。<br>请使用上面 <b>📂 Import JSON</b> 手动选择。</div>';
+        '<div class="empty">未自动找到 <code>{{ name }}_resolved.json</code> (' + err + ')。</div>';
     });
 })();
 </script>

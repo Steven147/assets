@@ -32,23 +32,24 @@ def _world_legend_html() -> str:
     return "".join(parts)
 
 
-def generate_map_html(resolved: dict, output_path: str) -> None:
+def generate_map_html(resolved: dict, registry: dict, output_path: str) -> None:
     env = _env()
     template = env.get_template("map_viewer.html.j2")
     html = template.render(
         name=resolved["name"],
+        registry_json=json.dumps(registry, ensure_ascii=False),
         legend_html=_legend_html(),
         colors_js=json.dumps(COLORS),
     )
     Path(output_path).write_text(html, encoding="utf-8")
 
 
-def generate_world_html(resolved: dict, output_path: str) -> None:
+def generate_world_html(resolved: dict, registry: dict, output_path: str) -> None:
     env = _env()
     template = env.get_template("world_viewer.html.j2")
     html = template.render(
-        resolved=resolved,
-        resolved_json=json.dumps(resolved, ensure_ascii=False),
+        name=resolved["name"],
+        registry_json=json.dumps(registry, ensure_ascii=False),
         legend_html=_world_legend_html(),
     )
     Path(output_path).write_text(html, encoding="utf-8")

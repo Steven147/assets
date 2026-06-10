@@ -24,7 +24,8 @@ def main() -> int:
     p_osm.add_argument("--city", required=True,
                        choices=["shanghai", "beijing", "tokyo", "paris",
                                 "london", "newyork", "hangzhou", "shenzhen",
-                                "guangzhou"])
+                                "guangzhou", "xiamen", "xian", "bangkok",
+                                "weifang", "syracuse"])
     p_osm.add_argument("--size-km", type=float, default=10.0)
     p_osm.add_argument("--name", default=None,
                        help="output dir name (default: <city>_<size_km>km)")

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stage 4: resolved -> output/<name>/<name>_viewer.html or world_viewer.html."""
+"""Stage 4: resolved + registry -> output/<name>/<name>_viewer.html."""
 import argparse
 import json
 import subprocess
@@ -39,13 +39,16 @@ def main() -> int:
     resolved = json.loads(
         (out_dir / f"{args.name}_resolved.json").read_text(encoding="utf-8")
     )
+    registry = json.loads(
+        (out_dir / f"{args.name}_registry.json").read_text(encoding="utf-8")
+    )
 
     if resolved.get("kind", "single") == "single":
         out_path = out_dir / f"{args.name}_viewer.html"
-        generate_map_html(resolved, str(out_path))
+        generate_map_html(resolved, registry, str(out_path))
     else:
         out_path = out_dir / "world_viewer.html"
-        generate_world_html(resolved, str(out_path))
+        generate_world_html(resolved, registry, str(out_path))
 
     print(f"✅ stage4 → {out_path}")
     if args.serve:
