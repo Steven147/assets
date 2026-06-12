@@ -93,3 +93,18 @@ smoke:
     @cp tests/fixtures/smoke_test_decl.json input/smoke_test_decl.json
     @just build smoke_test
     @just view smoke_test
+
+# ============================================================
+# Editor
+# ============================================================
+
+# edit: launch the map editor in a browser
+edit name="":
+    @if [ -z "{{name}}" ]; then \
+        {{PY}} pipeline/editor/editor_server.py; \
+    else \
+        {{PY}} pipeline/editor/editor_server.py --name {{name}}; \
+    fi
+
+edit-city name city:
+    {{PY}} pipeline/editor/editor_server.py --name {{name}} --city {{city}}
