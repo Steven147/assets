@@ -1,13 +1,24 @@
 """Map editor server: generates meta + tile_paths, serves static, POST /save."""
 import argparse
+import http.server
 import json
+import os
+import socketserver
 import sys
+import threading
+import webbrowser
 from pathlib import Path
 from typing import Optional
 
-from pipeline.editor.city_presets import get_preset
+# Ensure project root is on sys.path so this script works when run directly
+# (e.g. `python3 pipeline/editor/editor_server.py ...`).
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
 
-GAME_DIR = Path(__file__).resolve().parent.parent.parent
+from pipeline.editor.city_presets import get_preset  # noqa: E402
+
+GAME_DIR = _PROJECT_ROOT
 EDITOR_DIR = GAME_DIR / "pipeline" / "editor"
 INPUT_DIR = GAME_DIR / "input"
 DEFAULT_ROWS = 60
@@ -81,3 +92,66 @@ def save_decl_from_request(decl: dict) -> Path:
     out = INPUT_DIR / f"{name}_decl.json"
     out.write_text(json.dumps(decl, ensure_ascii=False, indent=2), encoding="utf-8")
     return out
+
+
+class EditorHandler(http.server.SimpleHTTPRequestHandler):
+    """Static file server with a single POST /save endpoint."""
+
+    def do_POST(self) -> None:  # noqa: N802
+        if self.path.rstrip("/") != "/save":
+            self.send_error(404, "not found")
+            return
+        length = int(self.headers.get("Content-Length", "0"))
+        try:
+            payload = json.loads(self.rfile.read(length).decode("utf-8"))
+            out = save_decl_from_request(payload)
+            body = json.dumps({"ok": True, "path": str(out)}).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        except (ValueError, KeyError) as e:
+            body = json.dumps({"ok": False, "error": str(e)}).encode("utf-8")
+            self.send_response(400)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+    def log_message(self, format: str, *args) -> None:  # noqa: A002
+        sys.stderr.write(f"[editor] {format % args}\n")
+
+
+def find_free_port() -> int:
+    import socket
+    s = socket.socket()
+    s.bind(("127.0.0.1", 0))
+    port = s.getsockname()[1]
+    s.close()
+    return port
+
+
+def main(argv: Optional[list[str]] = None) -> int:
+    args = parse_args(argv if argv is not None else sys.argv[1:])
+    meta = resolve_meta(args.name, args.city, args.rows, args.cols, args.span_km)
+    write_meta(meta, EDITOR_DIR / "meta.json")
+    write_tile_paths_to(EDITOR_DIR / "tile_paths.js")
+    port = args.port or find_free_port()
+    os.chdir(GAME_DIR)
+    httpd = socketserver.TCPServer(("127.0.0.1", port), EditorHandler)
+    url = f"http://127.0.0.1:{port}/pipeline/editor/editor.html"
+    print(f"[editor] serving on {url}")
+    print(f"[editor] meta: {meta}")
+    if not args.no_open:
+        threading.Timer(0.5, lambda: webbrowser.open(url)).start()
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\n[editor] shutting down")
+        httpd.shutdown()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
