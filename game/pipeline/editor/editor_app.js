@@ -142,4 +142,225 @@ class BackgroundAligner {
   }
 }
 
-export { TileLoader, Renderer, BackgroundAligner, PENS };
+class Toolbar {
+  constructor(handlers) {
+    this.handlers = handlers;
+    this._buildPens();
+    document.getElementById('undo').onclick = () => handlers.undo();
+    document.getElementById('redo').onclick = () => handlers.redo();
+    document.getElementById('clear').onclick = () => handlers.clear();
+    document.getElementById('export').onclick = () => handlers.export();
+    document.getElementById('apply-meta').onclick = () => handlers.applyMeta();
+  }
+
+  _buildPens() {
+    const row = document.getElementById('pens');
+    PENS.forEach(p => {
+      const btn = document.createElement('button');
+      btn.textContent = p;
+      btn.onclick = () => this.handlers.setPen(p);
+      if (p === 'G') btn.classList.add('active');
+      row.appendChild(btn);
+    });
+  }
+
+  setActivePen(p) {
+    document.querySelectorAll('#pens button').forEach(b => {
+      b.classList.toggle('active', b.textContent === p);
+    });
+  }
+
+  loadCityPresets(presets) {
+    const sel = document.getElementById('city');
+    sel.innerHTML = '<option value="">(blank)</option>' +
+      presets.map(p => `<option value="${p}">${p}</option>`).join('');
+    sel.onchange = () => {
+      if (sel.value) this.handlers.applyCity(sel.value);
+    };
+  }
+
+  setMeta(meta) {
+    document.getElementById('lat').value = meta.center_lat.toFixed(4);
+    document.getElementById('lng').value = meta.center_lng.toFixed(4);
+    document.getElementById('span').value = meta.span_km;
+    document.getElementById('rows').value = meta.rows;
+    document.getElementById('cols').value = meta.cols;
+  }
+
+  getMeta() {
+    return {
+      name: 'untitled',
+      center_lat: parseFloat(document.getElementById('lat').value),
+      center_lng: parseFloat(document.getElementById('lng').value),
+      span_km: parseFloat(document.getElementById('span').value),
+      rows: parseInt(document.getElementById('rows').value, 10),
+      cols: parseInt(document.getElementById('cols').value, 10),
+    };
+  }
+
+  setStatus(msg) {
+    document.getElementById('status').textContent = msg;
+  }
+}
+
+class MapEditor {
+  constructor(meta, cityPresets) {
+    this.grid = new GridModel(meta.rows, meta.cols);
+    this.resolver = new TileResolver();
+    this.history = new History(this.grid);
+    this.tileLoader = new TileLoader();
+    this.canvas = document.getElementById('grid');
+    this.renderer = new Renderer(this.canvas, this.tileLoader, this.grid, this.resolver);
+    this.aligner = new BackgroundAligner('map');
+    this.aligner.setView(meta);
+    this.toolbar = new Toolbar({
+      setPen: (p) => { this.pen = p; this.toolbar.setActivePen(p); },
+      undo: () => this._undo(),
+      redo: () => this._redo(),
+      clear: () => this._clear(),
+      export: () => this._export(),
+      applyMeta: () => this._applyMeta(),
+      applyCity: (name) => this._applyCity(name),
+    });
+    this.toolbar.loadCityPresets(cityPresets);
+    this.toolbar.setMeta(meta);
+    this.pen = 'G';
+    this._setupMouse();
+    this._setupResize();
+    this._loadDraft();
+    this._fitGridToView();
+    this.renderer.drawAll();
+  }
+
+  _setupMouse() {
+    let isPainting = false;
+    const onMove = (ev) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const { r, c } = this.renderer.pixelToCell(ev.clientX - rect.left, ev.clientY - rect.top);
+      if (r < 0 || c < 0 || r >= this.grid.rows || c >= this.grid.cols) return;
+      if (this.grid.get(r, c) !== this.pen) {
+        this.grid.set(r, c, this.pen);
+        this.renderer.drawCell(r, c);
+      }
+    };
+    this.canvas.onmousedown = (ev) => {
+      isPainting = true;
+      this.history.push(this.grid);
+      onMove(ev);
+    };
+    this.canvas.onmousemove = (ev) => { if (isPainting) onMove(ev); };
+    document.addEventListener('mouseup', () => { isPainting = false; });
+    this.canvas.onmouseleave = () => { isPainting = false; };
+  }
+
+  _setupResize() {
+    this.renderer.resizeToContainer();
+    window.addEventListener('resize', () => this.renderer.resizeToContainer());
+  }
+
+  _fitGridToView() {
+    const rect = this.canvas.getBoundingClientRect();
+    const cellSize = Math.max(8, Math.min(48, Math.floor(Math.min(rect.width / this.grid.cols, rect.height / this.grid.rows))));
+    this.renderer.setCellSize(cellSize);
+  }
+
+  _undo() {
+    if (this.history.undo(this.grid)) {
+      this.renderer.drawAll();
+      this._saveDraft();
+    }
+  }
+  _redo() {
+    if (this.history.redo(this.grid)) {
+      this.renderer.drawAll();
+      this._saveDraft();
+    }
+  }
+  _clear() {
+    if (!confirm('清空所有格子？')) return;
+    this.history.push(this.grid);
+    this.grid.clear();
+    this.renderer.drawAll();
+    this._saveDraft();
+  }
+  _export() {
+    const meta = this.toolbar.getMeta();
+    const json = DeclExporter.toJSON(this.grid, meta);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${meta.name || 'untitled'}_decl.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    fetch('/save', { method: 'POST', body: json, headers: { 'Content-Type': 'application/json' } })
+      .then(r => r.json().then(j => ({ status: r.status, body: j })))
+      .then(({ status, body }) => this.toolbar.setStatus(status === 200 && body.ok ? `已保存: ${body.path}` : `错误: ${body.error || status}`))
+      .catch(e => this.toolbar.setStatus(`下载成功,但保存到 input/ 失败: ${e.message}`));
+  }
+  _applyMeta() {
+    const m = this.toolbar.getMeta();
+    if (m.rows !== this.grid.rows || m.cols !== this.grid.cols) {
+      if (!confirm(`改变 grid 尺寸到 ${m.rows}x${m.cols}（破坏性）。继续？`)) return;
+      this.history.push(this.grid);
+      this.grid.resize(m.rows, m.cols);
+      this._fitGridToView();
+      this.renderer.drawAll();
+    }
+    this.aligner.setView(m);
+  }
+  _applyCity(name) {
+    // Use the existing resolve_meta semantics (best-effort without import).
+    // For simplicity, hardcode the same 5 cities.
+    const presets = {
+      shanghai: { center_lat: 31.2304, center_lng: 121.4737, span_km: 50 },
+      beijing:  { center_lat: 39.9042, center_lng: 116.4074, span_km: 50 },
+      hangzhou: { center_lat: 30.2741, center_lng: 120.1551, span_km: 40 },
+      syracuse: { center_lat: 43.0481, center_lng: -76.1474, span_km: 25 },
+      tokyo:    { center_lat: 35.6762, center_lng: 139.6503, span_km: 40 },
+    };
+    const p = presets[name];
+    if (!p) return;
+    const cur = this.toolbar.getMeta();
+    const newMeta = { ...cur, ...p };
+    this.toolbar.setMeta(newMeta);
+    this.aligner.setView(newMeta);
+  }
+
+  _loadDraft() {
+    const key = `mapeditor:${this.grid.rows}x${this.grid.cols}`;
+    const raw = localStorage.getItem(key);
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw);
+      for (let r = 0; r < Math.min(this.grid.rows, data.length); r++) {
+        for (let c = 0; c < Math.min(this.grid.cols, data[r].length); c++) {
+          this.grid.set(r, c, data[r][c]);
+        }
+      }
+    } catch {}
+  }
+
+  _saveDraft() {
+    const key = `mapeditor:${this.grid.rows}x${this.grid.cols}`;
+    try {
+      localStorage.setItem(key, JSON.stringify(this.grid.toDeclMap()));
+    } catch (e) {
+      this.toolbar.setStatus(`localStorage 写入失败: ${e.message}`);
+    }
+  }
+}
+
+async function boot() {
+  const metaUrl = new URL('meta.json', document.baseURI).href;
+  const meta = await fetch(metaUrl).then(r => r.json());
+  const cityPresets = ['shanghai', 'beijing', 'hangzhou', 'syracuse', 'tokyo'];
+  new MapEditor(meta, cityPresets);
+}
+
+boot().catch(e => {
+  document.getElementById('status').textContent = 'Boot error: ' + e.message;
+  console.error(e);
+});
+
+export { TileLoader, Renderer, BackgroundAligner, Toolbar, MapEditor, PENS };
