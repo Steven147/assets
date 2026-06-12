@@ -1,9 +1,9 @@
 """Build desc -> tile file path mapping from kenney_pixel-shmup/Tiles/."""
+import json
 from pathlib import Path
 from typing import Dict
 
 GAME_DIR = Path(__file__).resolve().parent.parent.parent
-KENNEY_TILES_DIR = GAME_DIR / "kenney_pixel-shmup" / "Tiles"
 
 # Hand-curated mapping of desc string -> tile file.
 # All entries verified to exist in kenney_pixel-shmup/Tiles/. Source mapping
@@ -85,7 +85,6 @@ def generate_tile_paths() -> Dict[str, str]:
 
 def write_tile_paths_js(out_path: Path) -> None:
     """Write tile_paths.js for the browser to load."""
-    import json
     paths = generate_tile_paths()
     out_path.write_text(
         f"window.TILE_PATHS = {json.dumps(paths, indent=2)};\n",
