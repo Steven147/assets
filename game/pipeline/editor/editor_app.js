@@ -104,6 +104,21 @@ class Renderer {
   drawCell(r, c) {
     this._drawCellAsync(r, c);
   }
+
+  /** Redraw the 3x3 region around (r, c). Used after painting one cell so the
+   *  neighbor tiles re-resolve with the new context. The center is included
+   *  too (covers the case where the cell was unchanged but a redraw is wanted).
+   *  Out-of-bounds neighbors are silently skipped. */
+  redrawAround(r, c) {
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr < 0 || nr >= this.grid.rows || nc < 0 || nc >= this.grid.cols) continue;
+        this._drawCellAsync(nr, nc);
+      }
+    }
+  }
 }
 
 class BackgroundAligner {
@@ -240,7 +255,10 @@ class MapEditor {
       if (r < 0 || c < 0 || r >= this.grid.rows || c >= this.grid.cols) return;
       if (this.grid.get(r, c) !== this.pen) {
         this.grid.set(r, c, this.pen);
-        this.renderer.drawCell(r, c);
+        // Re-resolve the 3x3 neighborhood: the painted cell changed, and any
+        // neighbor's resolved tile (beach/road/...) depends on its own
+        // neighbors, so a change in one cell can flip a neighbor's variant.
+        this.renderer.redrawAround(r, c);
       }
     };
     this.canvas.onmousedown = (ev) => {
