@@ -62,3 +62,22 @@ def write_tile_paths_to(out_path: Path) -> None:
     """Write tile_paths.js for the browser."""
     from pipeline.editor.tile_paths_gen import write_tile_paths_js
     write_tile_paths_js(out_path)
+
+
+def save_decl_from_request(decl: dict) -> Path:
+    """Validate decl shape and write to input/<name>_decl.json. Returns path."""
+    name = decl.get("name", "").strip()
+    if not name:
+        raise ValueError("missing name")
+    rows = decl["rows"]
+    cols = decl["cols"]
+    map_lines = decl["map"]
+    if len(map_lines) != rows:
+        raise ValueError(f"map has {len(map_lines)} rows, expected {rows} (shape mismatch)")
+    for i, line in enumerate(map_lines):
+        if len(line) != cols:
+            raise ValueError(f"row {i} has {len(line)} cols, expected {cols} (shape mismatch)")
+    INPUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = INPUT_DIR / f"{name}_decl.json"
+    out.write_text(json.dumps(decl, ensure_ascii=False, indent=2), encoding="utf-8")
+    return out

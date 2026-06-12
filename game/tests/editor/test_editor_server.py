@@ -68,3 +68,37 @@ def test_write_tile_paths_creates_file(tmp_path):
     text = out.read_text()
     assert "window.TILE_PATHS" in text
     assert "G-full-land" in text
+
+
+def test_save_handler_writes_decl(tmp_path, monkeypatch):
+    from pipeline.editor import editor_server
+    monkeypatch.setattr(editor_server, "INPUT_DIR", tmp_path)
+
+    payload = json.dumps({
+        "name": "my_map",
+        "kind": "single",
+        "rows": 3,
+        "cols": 3,
+        "center_lat": 1.0,
+        "center_lng": 2.0,
+        "span_km": 10,
+        "map": ["SSS", "SGS", "SSS"],
+    })
+
+    from pipeline.editor.editor_server import save_decl_from_request
+    decl = json.loads(payload)
+    out = save_decl_from_request(decl)
+    assert out.exists()
+    assert out.name == "my_map_decl.json"
+    data = json.loads(out.read_text())
+    assert data["map"] == ["SSS", "SGS", "SSS"]
+
+
+def test_save_handler_rejects_oversized_grid():
+    from pipeline.editor.editor_server import save_decl_from_request
+    bad = {"name": "x", "kind": "single", "rows": 3, "cols": 3,
+           "center_lat": 0, "center_lng": 0, "span_km": 10,
+           "map": ["AA", "BB"]}  # 3x3 expected but 2-col rows
+    import pytest
+    with pytest.raises(ValueError, match="shape"):
+        save_decl_from_request(bad)
