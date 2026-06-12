@@ -178,7 +178,18 @@ def _fetch_overpass_with_fallback(bbox: dict) -> dict:
     # Check cache first
     cache = _cache_path(bbox)
     if cache.exists():
-        return json.loads(cache.read_text(encoding="utf-8"))
+        cached = json.loads(cache.read_text(encoding="utf-8"))
+        # Validate cache: every way needs enough resolvable nodes
+        # (incomplete Overpass responses have ways but no geometry nodes)
+        node_ids = {e["id"] for e in cached.get("elements", [])
+                    if e.get("type") == "node" and "lat" in e}
+        way_count = sum(1 for e in cached.get("elements", [])
+                        if e.get("type") == "way")
+        # If we have ways but very few geometry nodes, the cache is stale
+        if way_count > 0 and len(node_ids) < way_count * 0.5:
+            cache.unlink(missing_ok=True)
+        else:
+            return cached
 
     query = build_overpass_query(bbox)
     data = urllib.parse.urlencode({"data": query}).encode("utf-8")
