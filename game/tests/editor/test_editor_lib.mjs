@@ -167,3 +167,26 @@ test('History bounded to 50 entries', () => {
   }
   assert.ok(count <= 50, `expected <=50 undos, got ${count}`);
 });
+
+test('DeclExporter.build produces valid decl JSON', () => {
+  const g = new lib.GridModel(3, 3);
+  g.set(1, 1, 'G');
+  const meta = { name: 'foo', center_lat: 1.0, center_lng: 2.0, span_km: 10, rows: 3, cols: 3 };
+  const decl = lib.DeclExporter.build(g, meta);
+  assert.equal(decl.name, 'foo');
+  assert.equal(decl.kind, 'single');
+  assert.equal(decl.rows, 3);
+  assert.equal(decl.cols, 3);
+  assert.equal(decl.center_lat, 1.0);
+  assert.equal(decl.map.length, 3);
+  assert.equal(decl.map[1][1], 'G');
+});
+
+test('DeclExporter.toJSON returns parseable JSON', () => {
+  const g = new lib.GridModel(2, 2);
+  const meta = { name: 'x', center_lat: 0, center_lng: 0, span_km: 5, rows: 2, cols: 2 };
+  const json = lib.DeclExporter.toJSON(g, meta);
+  const parsed = JSON.parse(json);
+  assert.equal(parsed.name, 'x');
+  assert.deepEqual(parsed.map, ['SS', 'SS']);
+});

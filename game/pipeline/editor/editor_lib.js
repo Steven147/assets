@@ -214,3 +214,22 @@ export class History {
     }
   }
 }
+
+export class DeclExporter {
+  static build(grid, meta) {
+    return {
+      name: meta.name,
+      kind: 'single',
+      center_lat: meta.center_lat,
+      center_lng: meta.center_lng,
+      span_km: meta.span_km,
+      rows: meta.rows,
+      cols: meta.cols,
+      map: grid.toDeclMap(),
+    };
+  }
+
+  static toJSON(grid, meta) {
+    return JSON.stringify(DeclExporter.build(grid, meta), null, 2);
+  }
+}
