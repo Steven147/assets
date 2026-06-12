@@ -67,7 +67,7 @@ Modular JS (no bundler). Classes:
 - `TileResolver` — pre-loaded lookup. `resolve(grid, r, c) → tilePath`.
 - `Renderer` — single `<canvas>`. `drawAll()`, `drawCell(r, c)`. Tracks which tile images are loaded.
 - `BackgroundAligner` — configures Leaflet bounds from meta. Re-anchors grid on center change.
-- `History` — `push(snapshot)`, `undo()`, `redo()`. Snapshots are small (delta-based is fine; full copy is acceptable for grids ≤ 200×200).
+- `History` — `push(snapshot)`, `undo()`, `redo()`. Strategy: full grid copy per stroke (mouse-down to mouse-up is one stroke = one snapshot). Bounded to last 50 strokes. Memory budget: 50 × 200 × 200 × 1 byte ≈ 2 MB worst case, acceptable.
 - `TileLoader` — lazy-loads `kenney_pixel-shmup/Tiles/*.png` on demand via `<img>` + cache.
 - `Toolbar` — pen selection, size input, city preset dropdown, undo/redo buttons, export button.
 - `DeclExporter` — builds the JSON object and triggers download / writes to `input/`.
@@ -121,10 +121,10 @@ window.TILE_LOOKUP = {
 
 ### Re-anchor / Re-size
 
-1. User changes center lat/lng OR rows/cols OR span_km in the toolbar.
-2. `BackgroundAligner.reconfigure(meta)` updates Leaflet bounds.
-3. Canvas is resized: new `cols × rows` cells fit the new visible area.
-4. Existing painted cells are kept by relative position (top-left of grid stays anchored) OR cleared (user choice, default: keep, re-flow).
+1. User changes center lat/lng OR span_km in the toolbar.
+2. `BackgroundAligner.reconfigure(meta)` updates Leaflet bounds to recenter the map at the new coordinates.
+3. Existing painted cells stay in place (their char content is preserved); only the OSM background shifts. The cell-to-lat/lng mapping is recomputed, but the grid array itself is untouched.
+4. User changes rows/cols in the toolbar → confirm dialog (destructive). On confirm, grid is reallocated; existing cells are kept by top-left alignment, new cells default to `S` (sea), cells that fall outside the new bounds are dropped.
 
 ### Export
 
@@ -168,7 +168,7 @@ The JS side just does a dictionary lookup; the actual logic lives in `resolve.py
 - **One map at a time.** No multi-map UI. Close tab to switch.
 - **No multi-user / collaboration.** Single browser session.
 - **No undo for "clear all" / "resize" operations.** These are destructive and show a confirm dialog.
-- **Tile registry is read-only in v1.** User picks pen from fixed set (G/S/O/R/r/L); no custom tile upload.
+- **No custom tile upload.** User picks pen from fixed set (G/S/O/R/r/L); tile variants come from the default `kenney_pixel-shmup/Tiles/` set resolved by `pipeline/resolve.py`.
 
 ## Error Handling
 
