@@ -76,9 +76,14 @@ DESC_TO_TILE: Dict[str, str] = {
 
 
 def generate_tile_paths() -> Dict[str, str]:
-    """Return desc -> relative path string for all known descs."""
+    """Return desc -> absolute URL path (e.g. /kenney_pixel-shmup/Tiles/...).
+
+    The editor HTML is served from /pipeline/editor/editor.html, so a relative
+    path would resolve under /pipeline/editor/ and 404. Absolute paths resolve
+    from the server root (which is the game dir) and hit the right files.
+    """
     return {
-        desc: f"kenney_pixel-shmup/Tiles/{filename}"
+        desc: f"/kenney_pixel-shmup/Tiles/{filename}"
         for desc, filename in DESC_TO_TILE.items()
     }
 

@@ -17,7 +17,7 @@ def test_generate_tile_paths_returns_dict():
     assert isinstance(paths, dict)
     assert len(paths) > 50
     for desc, p in paths.items():
-        assert p.startswith("kenney_pixel-shmup/Tiles/"), f"{desc} -> {p}"
+        assert p.startswith("/kenney_pixel-shmup/Tiles/"), f"{desc} -> {p}"
 
 
 def test_known_descs_present():
@@ -34,12 +34,20 @@ def test_known_descs_present():
 
 
 def test_paths_actually_exist():
-    """Every desc->path entry must resolve to a real PNG file."""
+    """Every desc->path entry must resolve to a real PNG file.
+
+    Paths are absolute-from-server-root (e.g. /kenney_pixel-shmup/Tiles/...),
+    but on the filesystem they live under the game/ dir, so we strip the
+    leading slash and join with the game root.
+    """
     paths = generate_tile_paths()
     base = Path(__file__).resolve().parent.parent.parent
     missing = []
     for desc, rel in paths.items():
-        full = base / rel
+        # Strip leading slash so "absolute from server root" becomes
+        # relative to the game/ dir on disk.
+        rel_stripped = rel.lstrip("/")
+        full = base / rel_stripped
         if not full.exists():
             missing.append((desc, str(full)))
     assert not missing, f"missing tile files: {missing}"
