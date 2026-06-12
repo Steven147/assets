@@ -1,5 +1,6 @@
 """Map editor server: generates meta + tile_paths, serves static, POST /save."""
 import argparse
+import json
 import sys
 from pathlib import Path
 from typing import Optional
@@ -49,3 +50,15 @@ def resolve_meta(name: str, city: str, rows: int, cols: int, span_km: Optional[f
         "rows": rows,
         "cols": cols,
     }
+
+
+def write_meta(meta: dict, out_path: Path) -> None:
+    """Write meta.json to out_path."""
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def write_tile_paths_to(out_path: Path) -> None:
+    """Write tile_paths.js for the browser."""
+    from pipeline.editor.tile_paths_gen import write_tile_paths_js
+    write_tile_paths_js(out_path)

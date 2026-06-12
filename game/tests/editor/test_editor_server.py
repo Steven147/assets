@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from pipeline.editor.editor_server import parse_args
 
@@ -46,3 +48,23 @@ def test_resolve_meta_unknown_city_warns(capsys):
     meta = resolve_meta(name="foo", city="atlantis", rows=40, cols=60)
     captured = capsys.readouterr()
     assert "unknown city" in captured.out.lower() or meta["center_lat"] == 0.0
+
+
+def test_write_meta_creates_file(tmp_path):
+    from pipeline.editor.editor_server import write_meta
+    meta = {"name": "foo", "center_lat": 1.0, "center_lng": 2.0, "span_km": 10, "rows": 60, "cols": 80}
+    out = tmp_path / "meta.json"
+    write_meta(meta, out)
+    assert out.exists()
+    data = json.loads(out.read_text())
+    assert data["name"] == "foo"
+
+
+def test_write_tile_paths_creates_file(tmp_path):
+    from pipeline.editor.editor_server import write_tile_paths_to
+    out = tmp_path / "tile_paths.js"
+    write_tile_paths_to(out)
+    assert out.exists()
+    text = out.read_text()
+    assert "window.TILE_PATHS" in text
+    assert "G-full-land" in text
