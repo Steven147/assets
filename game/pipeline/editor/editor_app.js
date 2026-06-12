@@ -106,4 +106,40 @@ class Renderer {
   }
 }
 
-export { TileLoader, Renderer, PENS };
+class BackgroundAligner {
+  constructor(mapElId) {
+    this.map = L.map(mapElId, { zoomControl: true });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+      maxZoom: 19,
+    }).addTo(this.map);
+  }
+
+  /** Compute Leaflet zoom level that fits `spanKm` vertically. */
+  static _zoomForSpan(spanKm) {
+    // km per pixel at zoom z, at lat=0: 156543.03 / 2^z
+    // Assume a 600px-tall map view; pick zoom where 600px = spanKm.
+    const targetKmPerPixel = spanKm / 600;
+    const z = Math.log2(156543.03 / (targetKmPerPixel * 111.0));
+    return Math.max(1, Math.min(19, Math.round(z)));
+  }
+
+  /** Set Leaflet view to center + span_km. */
+  setView(meta) {
+    const { center_lat, center_lng, span_km } = meta;
+    const zoom = BackgroundAligner._zoomForSpan(span_km);
+    this.map.setView([center_lat, center_lng], zoom);
+  }
+
+  /** Get current center + computed span_km in km. */
+  getView() {
+    const c = this.map.getCenter();
+    const bounds = this.map.getBounds();
+    const north = bounds.getNorth();
+    const heightDeg = Math.abs(north - c.lat) * 2;
+    const spanKm = heightDeg * 111.0;
+    return { center_lat: c.lat, center_lng: c.lng, span_km: Math.max(0.1, spanKm) };
+  }
+}
+
+export { TileLoader, Renderer, BackgroundAligner, PENS };
