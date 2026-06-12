@@ -127,3 +127,43 @@ test('TileResolver r (lowercase) uses o-w- prefix', () => {
   // r at (1,1) with r above and below -> "o-w-top-bottom-road"
   assert.equal(r.resolve(g, 1, 1), 'o-w-top-bottom-road');
 });
+
+test('History push and undo restores previous state', () => {
+  const g = new lib.GridModel(3, 3);
+  const h = new lib.History(g);
+  g.set(1, 1, 'G');
+  h.push(g);
+  g.set(1, 1, 'O');
+  h.push(g);
+  assert.equal(g.get(1, 1), 'O');
+  h.undo(g);
+  assert.equal(g.get(1, 1), 'G');
+  h.undo(g);
+  assert.equal(g.get(1, 1), 'S');
+});
+
+test('History redo replays undone changes', () => {
+  const g = new lib.GridModel(3, 3);
+  const h = new lib.History(g);
+  g.set(1, 1, 'G');
+  h.push(g);
+  h.undo(g);
+  h.redo(g);
+  assert.equal(g.get(1, 1), 'G');
+});
+
+test('History bounded to 50 entries', () => {
+  const g = new lib.GridModel(3, 3);
+  const h = new lib.History(g);
+  for (let i = 0; i < 60; i++) {
+    g.set(0, 0, i % 2 === 0 ? 'G' : 'O');
+    h.push(g);
+  }
+  // We should only be able to undo 50 times max
+  let count = 0;
+  while (h.canUndo() && count < 100) {
+    h.undo(g);
+    count++;
+  }
+  assert.ok(count <= 50, `expected <=50 undos, got ${count}`);
+});

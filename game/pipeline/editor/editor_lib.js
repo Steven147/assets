@@ -164,3 +164,53 @@ export class TileResolver {
     return 'W-full-sea';
   }
 }
+
+const HISTORY_LIMIT = 50;
+
+export class History {
+  constructor(initialGrid) {
+    this._stack = [initialGrid.clone()];
+    this._cursor = 0;  // points to current state
+  }
+
+  push(grid) {
+    // Drop any redo branch
+    this._stack = this._stack.slice(0, this._cursor + 1);
+    this._stack.push(grid.clone());
+    if (this._stack.length > HISTORY_LIMIT) {
+      this._stack.shift();
+    }
+    this._cursor = this._stack.length - 1;
+  }
+
+  canUndo() {
+    return this._cursor > 0;
+  }
+
+  canRedo() {
+    return this._cursor < this._stack.length - 1;
+  }
+
+  undo(grid) {
+    if (!this.canUndo()) return false;
+    this._cursor--;
+    this._restore(grid, this._stack[this._cursor]);
+    return true;
+  }
+
+  redo(grid) {
+    if (!this.canRedo()) return false;
+    this._cursor++;
+    this._restore(grid, this._stack[this._cursor]);
+    return true;
+  }
+
+  _restore(grid, snapshot) {
+    grid.resize(snapshot.rows, snapshot.cols);
+    for (let r = 0; r < snapshot.rows; r++) {
+      for (let c = 0; c < snapshot.cols; c++) {
+        grid.set(r, c, snapshot.get(r, c));
+      }
+    }
+  }
+}
