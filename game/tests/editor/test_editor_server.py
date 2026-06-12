@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import pytest
 from pipeline.editor.editor_server import parse_args
@@ -102,3 +103,49 @@ def test_save_handler_rejects_oversized_grid():
     import pytest
     with pytest.raises(ValueError, match="shape"):
         save_decl_from_request(bad)
+
+
+def test_end_to_end_save(tmp_path, monkeypatch):
+    from pipeline.editor import editor_server
+    monkeypatch.setattr(editor_server, "INPUT_DIR", tmp_path)
+    monkeypatch.setattr(editor_server, "GAME_DIR", Path(__file__).resolve().parent.parent.parent)
+
+    import threading, time, urllib.request, json, socketserver
+    port = editor_server.find_free_port()
+
+    # Generate meta + tile_paths (server normally does this on boot)
+    meta = editor_server.resolve_meta(name="e2e", city="shanghai", rows=3, cols=3)
+    editor_server.write_meta(meta, editor_server.EDITOR_DIR / "meta.json")
+    editor_server.write_tile_paths_to(editor_server.EDITOR_DIR / "tile_paths.js")
+
+    httpd = socketserver.TCPServer(("127.0.0.1", port), editor_server.EditorHandler)
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+    time.sleep(0.2)
+
+    try:
+        payload = json.dumps({
+            "name": "e2e_map",
+            "kind": "single",
+            "rows": 3, "cols": 3,
+            "center_lat": 1.0, "center_lng": 2.0, "span_km": 10,
+            "map": ["SSS", "SGS", "SSS"],
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            f"http://127.0.0.1:{port}/save",
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        resp = urllib.request.urlopen(req, timeout=5)
+        assert resp.status == 200
+        body = json.loads(resp.read())
+        assert body["ok"] is True
+        out = Path(body["path"])
+        assert out.exists()
+        assert out.name == "e2e_map_decl.json"
+        data = json.loads(out.read_text())
+        assert data["map"] == ["SSS", "SGS", "SSS"]
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
