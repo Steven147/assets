@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Map Editor</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
+    #app { display: flex; height: 100vh; }
+    #toolbar { width: 220px; background: #2b2b2b; color: #eee; padding: 12px; overflow-y: auto; }
+    #toolbar h2 { font-size: 14px; margin: 12px 0 4px; }
+    #toolbar button, #toolbar select, #toolbar input {
+      display: block; width: 100%; margin: 4px 0; padding: 4px; box-sizing: border-box;
+      background: #3a3a3a; color: #eee; border: 1px solid #555; border-radius: 3px;
+    }
+    #toolbar button.active { background: #4a7aaa; }
+    #map { flex: 1; position: relative; }
+    #grid { position: absolute; top: 0; left: 0; pointer-events: auto; z-index: 400; }
+    #status { position: absolute; bottom: 0; left: 0; right: 0;
+              background: rgba(0,0,0,0.7); color: #fff; padding: 4px 8px; font-size: 12px;
+              z-index: 500; }
+    .pen-row { display: flex; gap: 4px; margin: 4px 0; }
+    .pen-row button { flex: 1; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="toolbar">
+      <h2>画笔</h2>
+      <div class="pen-row" id="pens"></div>
+
+      <h2>画布</h2>
+      <label>城市: <select id="city"></select></label>
+      <label>中心 Lat: <input id="lat" type="number" step="0.0001"></label>
+      <label>中心 Lng: <input id="lng" type="number" step="0.0001"></label>
+      <label>span (km): <input id="span" type="number" step="0.1"></label>
+      <label>rows: <input id="rows" type="number" min="1" max="500"></label>
+      <label>cols: <input id="cols" type="number" min="1" max="500"></label>
+      <button id="apply-meta">应用</button>
+
+      <h2>操作</h2>
+      <button id="undo">撤销</button>
+      <button id="redo">重做</button>
+      <button id="clear">清空</button>
+      <button id="export">导出</button>
+    </div>
+    <div id="map">
+      <canvas id="grid"></canvas>
+      <div id="status">就绪</div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="tile_paths.js"></script>
+  <script type="module" src="editor_app.js"></script>
+</body>
+</html>
