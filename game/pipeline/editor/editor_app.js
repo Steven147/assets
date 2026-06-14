@@ -171,6 +171,8 @@ class Toolbar {
     document.getElementById('clear').onclick = () => handlers.clear();
     document.getElementById('export').onclick = () => handlers.export();
     document.getElementById('apply-meta').onclick = () => handlers.applyMeta();
+    document.getElementById('sync-meta').onclick = () => handlers.syncMeta();
+    document.getElementById('toggle-base').onclick = () => handlers.toggleBaseLayer();
   }
 
   _buildPens() {
@@ -220,6 +222,11 @@ class Toolbar {
 
   setStatus(msg) {
     document.getElementById('status').textContent = msg;
+  }
+
+  /** Update the baselayer toggle button label. */
+  setBaseLayerLabel(text) {
+    document.getElementById('toggle-base').textContent = `底图: ${text}`;
   }
 }
 
