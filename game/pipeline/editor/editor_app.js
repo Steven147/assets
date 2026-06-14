@@ -123,7 +123,7 @@ class Renderer {
 
 class BackgroundAligner {
   constructor(mapElId) {
-    this.map = L.map(mapElId, { zoomControl: true });
+    this.map = L.map(mapElId, { zoomControl: true, doubleClickZoom: false });
     this.tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap',
       maxZoom: 19,
