@@ -28,19 +28,22 @@ DOM 树不变：canvas 仍是 `#map` div 的子元素（不是 Leaflet pane 的�
   this._setupMapSync();
   ```
 
-新增方法：
+新增方法（2 个）：
 ```js
 _setupMapSync() {
-  const onMove = () => {
-    const pt = this.aligner.map.latLngToContainerPoint(this._centerLatLng);
-    const cellSize = this.renderer.cellSize();
-    this.canvas.style.left = (pt.x - this.grid.cols * cellSize / 2) + 'px';
-    this.canvas.style.top = (pt.y - this.grid.rows * cellSize / 2) + 'px';
-  };
-  this.aligner.map.on('move', onMove);
-  onMove();  // initial position
+  this.aligner.map.on('move', this._onMapMove.bind(this));
+  this._onMapMove();  // initial position
+}
+
+_onMapMove() {
+  const pt = this.aligner.map.latLngToContainerPoint(this._centerLatLng);
+  const cellSize = this.renderer.cellSize();
+  this.canvas.style.left = (pt.x - this.grid.cols * cellSize / 2) + 'px';
+  this.canvas.style.top = (pt.y - this.grid.rows * cellSize / 2) + 'px';
 }
 ```
+
+理由：把 `_onMapMove` 做成类的实例方法（不是闭包）让 `_syncMeta` / resize 监听能直接调 `this._onMapMove()`，不用绕闭包引用。
 
 锚点更新点（4 处，都在一两行内）：
 
@@ -50,9 +53,10 @@ _setupMapSync() {
   ```
   之后 Leaflet 的 `setView` 触发 `move` 事件，`onMove` 自动重定位。
 
-- `_syncMeta()`：写回 lat/lng 之后：
+- `_syncMeta()`：写回 lat/lng 之后，**显式调一次** `this._onMapMove()` 重定位 canvas（因为 setView 没被调，Leaflet 不会自动触发 `move`）：
   ```js
   this._centerLatLng = L.latLng(view.center_lat, view.center_lng);
+  this._onMapMove();
   ```
 
 - `_applyCity(name)`：应用城市预设之后（写在 `this.toolbar.setMeta(newMeta); this.aligner.setView(newMeta);` 后面）：
@@ -125,9 +129,7 @@ Python 服务只启动静态服务 + `/save` 端点。
    - `toolbar.setMeta(...)` 写回
    - 状态栏显示「已同步: ...」
    - **新增**：`this._centerLatLng = L.latLng(view.center_lat, view.center_lng)`
-3. Leaflet 不自动触发 `move`（因为我们没调 setView）
-4. **手动补一次** `this._onMapMoveRef?.()` 或直接调 `onMove`：因为 setMeta 不触发 move，且现在锚点换了，canvas 位置要重新算
-5. 实际上：`_syncMeta` 不调 setView，所以 `_centerLatLng` 改了后**不会**自动重定位 canvas。**需要在 `_syncMeta` 末尾显式调一次 `onMove()`**（用闭包引用）
+   - **新增**：`this._onMapMove()` 显式重定位 canvas（因为没调 setView，Leaflet 不会自动触发 `move`）
 
 ### 用户点击 [应用]
 
@@ -155,24 +157,19 @@ Python 服务只启动静态服务 + `/save` 端点。
 
 ### 自动化（pytest）
 
-新增 `tests/editor/test_editor_map_sync.py`，和 `test_editor_html.py` 同样的 server-fixture 模式：
+新增 `tests/editor/test_editor_map_sync.py`，**纯静态检查**（项目无 Playwright 依赖；和上一轮 spec 一致）。通过 `_get` 拉 `editor_app.js`，断言关键符号存在：
 
 ```python
-def test_canvas_positioned_at_meta_center_on_load(server_url):
-    """After load, canvas center should be at the screen position of meta center."""
-    # Fetch editor.html, then fetch meta.json
-    # Parse meta center (default is shanghai 31.2304, 121.4737)
-    # Verify editor_app.js contains _setupMapSync and latLngToContainerPoint
-    # (Cannot run JS in node without a browser, so verify by string presence)
+def test_map_sync_symbols_present(server_url):
+    """Editor app must wire up the map-grid sync feature."""
     body = _get(f"{server_url}/pipeline/editor/editor_app.js").body.decode("utf-8")
-    assert "_setupMapSync" in body
-    assert "latLngToContainerPoint" in body
-    assert "doubleClickZoom: false" in body
+    assert "_setupMapSync" in body, "missing _setupMapSync method"
+    assert "_onMapMove" in body, "missing _onMapMove method"
+    assert "latLngToContainerPoint" in body, "missing latLngToContainerPoint call"
+    assert "doubleClickZoom: false" in body, "doubleClickZoom not disabled"
 ```
 
-退路（如果上面的 server fixture 不可用）：**纯静态检查**——grep `editor_app.js` 文件确认关键符号存在。
-
-**最终方案**：退路（项目无 Playwright 依赖；和上一轮 spec 一致）。
+`_get` 从 `test_editor_html.py` 复制或 import（视实施 plan 决定）。
 
 ### 手动测试（更新 `docs/editor-usage.md`）
 
