@@ -130,19 +130,19 @@ class BackgroundAligner {
     }).addTo(this.map);
   }
 
-  /** Compute Leaflet zoom level that fits `spanKm` vertically. */
-  static _zoomForSpan(spanKm) {
-    // km per pixel at zoom z, at lat=0: 156543.03 / 2^z
-    // Assume a 600px-tall map view; pick zoom where 600px = spanKm.
-    const targetKmPerPixel = spanKm / 600;
-    const z = Math.log2(156543.03 / (targetKmPerPixel * 111.0));
+  /** Compute Leaflet zoom level that fits `spanKm` vertically in `mapHeightPx` pixels. */
+  static _zoomForSpan(spanKm, mapHeightPx) {
+    // km per pixel at zoom z, at lat=0: 156543.03 / 2^z (in meters)
+    // pick zoom where mapHeightPx = spanKm
+    const targetMPerPixel = (spanKm * 1000) / mapHeightPx;
+    const z = Math.log2(156543.03 / targetMPerPixel);
     return Math.max(1, Math.min(19, Math.round(z)));
   }
 
   /** Set Leaflet view to center + span_km. */
   setView(meta) {
     const { center_lat, center_lng, span_km } = meta;
-    const zoom = BackgroundAligner._zoomForSpan(span_km);
+    const zoom = BackgroundAligner._zoomForSpan(span_km, this.map.getSize().y);
     this.map.setView([center_lat, center_lng], zoom);
   }
 
