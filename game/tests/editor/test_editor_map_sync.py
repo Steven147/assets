@@ -69,6 +69,7 @@ def test_map_sync_symbols_present(server_url):
     assert re.search(r"\b_onMapMove\b", text), "missing _onMapMove method"
     assert "latLngToContainerPoint" in text, "missing latLngToContainerPoint call"
     assert "doubleClickZoom: false" in text, "doubleClickZoom not disabled"
+    assert "zoomSnap: 0" in text, "zoomSnap: 0 not set (span won't round-trip)"
 
 
 def test_painting_mode_symbols_present(server_url):

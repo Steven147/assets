@@ -36,13 +36,17 @@ class Renderer {
 
   setCellSize(px) {
     this._cellSize = Math.max(4, Math.min(64, px));
+    // Canvas size = grid pixel size, so the canvas covers the full grid
+    // (not just the visible map area). This is what lets every cell receive
+    // mouse events even when the grid is larger than the map.
+    this.canvas.width = this.grid.cols * this._cellSize;
+    this.canvas.height = this.grid.rows * this._cellSize;
     this.drawAll();
   }
 
   resizeToContainer() {
-    const rect = this.canvas.parentElement.getBoundingClientRect();
-    this.canvas.width = rect.width;
-    this.canvas.height = rect.height;
+    // Canvas size is driven by setCellSize (grid pixels), not the map.
+    // This call exists for symmetry with the old API and triggers a redraw.
     this.drawAll();
   }
 
@@ -123,20 +127,21 @@ class Renderer {
 
 class BackgroundAligner {
   constructor(mapElId) {
-    this.map = L.map(mapElId, { zoomControl: true, doubleClickZoom: false });
+    this.map = L.map(mapElId, { zoomControl: true, doubleClickZoom: false, zoomSnap: 0 });
     this.tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap',
       maxZoom: 19,
     }).addTo(this.map);
   }
 
-  /** Compute Leaflet zoom level that fits `spanKm` vertically in `mapHeightPx` pixels. */
+  /** Compute Leaflet zoom level that fits `spanKm` vertically in `mapHeightPx` pixels.
+   *  Returns a fractional zoom (zoomSnap: 0). Caller clamps to Leaflet's allowed range. */
   static _zoomForSpan(spanKm, mapHeightPx) {
     // km per pixel at zoom z, at lat=0: 156543.03 / 2^z (in meters)
     // pick zoom where mapHeightPx = spanKm
     const targetMPerPixel = (spanKm * 1000) / mapHeightPx;
     const z = Math.log2(156543.03 / targetMPerPixel);
-    return Math.max(1, Math.min(19, Math.round(z)));
+    return Math.max(1, Math.min(19, z));
   }
 
   /** Set Leaflet view to center + span_km. */
@@ -290,6 +295,9 @@ class MapEditor {
     };
     this.canvas.onmousedown = (ev) => {
       if (this._mode === 'dragger') return;  // shouldn't fire (pointer-events: none)
+      // Stop the event bubbling to the map container, so Leaflet's drag handler
+      // doesn't pan the map while we're painting.
+      ev.stopPropagation();
       isPainting = true;
       this.history.push(this.grid);
       onMove(ev);
@@ -305,7 +313,9 @@ class MapEditor {
   _setupBrushOutline() {
     const div = document.createElement('div');
     div.id = 'brush-outline';
-    div.style.cssText = 'position:absolute;pointer-events:none;border:2px dashed rgba(255,255,255,0.85);display:none;z-index:401;box-sizing:border-box;';
+    // z-index 460 so the outline sits above the canvas (z-450) and above any
+    // Leaflet pane below 500 (overlayPane is 400).
+    div.style.cssText = 'position:absolute;pointer-events:none;border:2px dashed rgba(255,255,255,0.85);display:none;z-index:460;box-sizing:border-box;';
     this.canvas.parentElement.appendChild(div);
     this._brushOutline = div;
   }
@@ -316,10 +326,14 @@ class MapEditor {
       return;
     }
     const cellSize = this.renderer.cellSize();
+    // Outline is a sibling of canvas in #map. Offset by canvas's screen position
+    // so the outline aligns with the cell that the cursor is over.
+    const canvasLeft = parseFloat(this.canvas.style.left) || 0;
+    const canvasTop = parseFloat(this.canvas.style.top) || 0;
     this._brushOutline.style.width = (6 * cellSize) + 'px';
     this._brushOutline.style.height = (6 * cellSize) + 'px';
-    this._brushOutline.style.left = ((c - 3) * cellSize) + 'px';
-    this._brushOutline.style.top = ((r - 3) * cellSize) + 'px';
+    this._brushOutline.style.left = (canvasLeft + (c - 3) * cellSize) + 'px';
+    this._brushOutline.style.top = (canvasTop + (r - 3) * cellSize) + 'px';
     this._brushOutline.style.display = 'block';
   }
 
@@ -356,14 +370,17 @@ class MapEditor {
   _setupResize() {
     this.renderer.resizeToContainer();
     window.addEventListener('resize', () => {
-      this.renderer.resizeToContainer();
+      // Re-fit cell size to the new map size, then reposition canvas.
+      this._fitGridToView();
       this._onMapMove();
     });
   }
 
   _fitGridToView() {
-    const rect = this.canvas.getBoundingClientRect();
-    const cellSize = Math.max(8, Math.min(48, Math.floor(Math.min(rect.width / this.grid.cols, rect.height / this.grid.rows))));
+    // Compute cellSize based on the MAP's size (so the grid fits in the map),
+    // not the canvas's size (which is now grid-sized → would be circular).
+    const mapRect = this.canvas.parentElement.getBoundingClientRect();
+    const cellSize = Math.max(8, Math.min(48, Math.floor(Math.min(mapRect.width / this.grid.cols, mapRect.height / this.grid.rows))));
     this.renderer.setCellSize(cellSize);
   }
 
@@ -377,6 +394,8 @@ class MapEditor {
     const cellSize = this.renderer.cellSize();
     this.canvas.style.left = (pt.x - this.grid.cols * cellSize / 2) + 'px';
     this.canvas.style.top = (pt.y - this.grid.rows * cellSize / 2) + 'px';
+    // Hide the outline during pan; it re-appears on the next mouse move.
+    this._brushOutline.style.display = 'none';
   }
 
   _undo() {
