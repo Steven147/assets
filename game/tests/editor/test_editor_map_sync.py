@@ -69,3 +69,20 @@ def test_map_sync_symbols_present(server_url):
     assert re.search(r"\b_onMapMove\b", text), "missing _onMapMove method"
     assert "latLngToContainerPoint" in text, "missing latLngToContainerPoint call"
     assert "doubleClickZoom: false" in text, "doubleClickZoom not disabled"
+
+
+def test_painting_mode_symbols_present(server_url):
+    """Editor app must wire up the 3 painting modes (dragger/painter/bigger)."""
+    # HTML: 3 mode buttons
+    _, body = _get(f"{server_url}/pipeline/editor/editor.html")
+    html = body.decode("utf-8")
+    assert 'id="mode-dragger"' in html, "missing mode-dragger button"
+    assert 'id="mode-painter"' in html, "missing mode-painter button"
+    assert 'id="mode-bigger"' in html, "missing mode-bigger button"
+    # JS: 3 mode handlers + helpers
+    _, body = _get(f"{server_url}/pipeline/editor/editor_app.js")
+    text = body.decode("utf-8")
+    assert re.search(r"\b_setMode\b", text), "missing _setMode method"
+    assert re.search(r"\b_paintAt\b", text), "missing _paintAt method"
+    assert re.search(r"\b_brushOutline\b", text), "missing _brushOutline field"
+    assert "'dragger'" in text and "'painter'" in text and "'bigger'" in text, "missing mode literals"
