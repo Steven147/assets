@@ -124,7 +124,7 @@ class Renderer {
 class BackgroundAligner {
   constructor(mapElId) {
     this.map = L.map(mapElId, { zoomControl: true });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    this.tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap',
       maxZoom: 19,
     }).addTo(this.map);
@@ -154,6 +154,11 @@ class BackgroundAligner {
     const heightDeg = Math.abs(north - c.lat) * 2;
     const spanKm = heightDeg * 111.0;
     return { center_lat: c.lat, center_lng: c.lng, span_km: Math.max(0.1, spanKm) };
+  }
+
+  /** Set OSM tile layer opacity. value ∈ [0, 1]. */
+  setOpacity(value) {
+    this.tileLayer.setOpacity(value);
   }
 }
 
