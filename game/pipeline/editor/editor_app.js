@@ -290,7 +290,10 @@ class MapEditor {
 
   _setupResize() {
     this.renderer.resizeToContainer();
-    window.addEventListener('resize', () => this.renderer.resizeToContainer());
+    window.addEventListener('resize', () => {
+      this.renderer.resizeToContainer();
+      this._onMapMove();
+    });
   }
 
   _fitGridToView() {
@@ -356,6 +359,8 @@ class MapEditor {
       span_km: parseFloat(view.span_km.toFixed(1)),
     });
     this.toolbar.setStatus(`已同步: ${view.center_lat.toFixed(4)}, ${view.center_lng.toFixed(4)}`);
+    this._centerLatLng = L.latLng(view.center_lat, view.center_lng);
+    this._onMapMove();
   }
 
   _toggleBaseLayer() {
@@ -377,7 +382,8 @@ class MapEditor {
       this._fitGridToView();
       this.renderer.drawAll();
     }
-    this.aligner.setView(m);
+    this._centerLatLng = L.latLng(m.center_lat, m.center_lng);
+    this.aligner.setView(m);  // triggers Leaflet 'move' event → _onMapMove runs
   }
   _applyCity(name) {
     // Use the existing resolve_meta semantics (best-effort without import).
@@ -394,7 +400,8 @@ class MapEditor {
     const cur = this.toolbar.getMeta();
     const newMeta = { ...cur, ...p };
     this.toolbar.setMeta(newMeta);
-    this.aligner.setView(newMeta);
+    this._centerLatLng = L.latLng(newMeta.center_lat, newMeta.center_lng);
+    this.aligner.setView(newMeta);  // triggers Leaflet 'move' → _onMapMove runs
   }
 
   _loadDraft() {
