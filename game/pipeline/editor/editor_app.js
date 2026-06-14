@@ -173,6 +173,9 @@ class Toolbar {
     document.getElementById('apply-meta').onclick = () => handlers.applyMeta();
     document.getElementById('sync-meta').onclick = () => handlers.syncMeta();
     document.getElementById('toggle-base').onclick = () => handlers.toggleBaseLayer();
+    document.getElementById('mode-dragger').onclick = () => handlers.setMode('dragger');
+    document.getElementById('mode-painter').onclick = () => handlers.setMode('painter');
+    document.getElementById('mode-bigger').onclick = () => handlers.setMode('bigger');
   }
 
   _buildPens() {
@@ -189,6 +192,12 @@ class Toolbar {
   setActivePen(p) {
     document.querySelectorAll('#pens button').forEach(b => {
       b.classList.toggle('active', b.textContent === p);
+    });
+  }
+
+  setActiveMode(mode) {
+    ['dragger', 'painter', 'bigger'].forEach(m => {
+      document.getElementById(`mode-${m}`).classList.toggle('active', m === mode);
     });
   }
 
@@ -250,13 +259,16 @@ class MapEditor {
       applyCity: (name) => this._applyCity(name),
       syncMeta: () => this._syncMeta(),
       toggleBaseLayer: () => this._toggleBaseLayer(),
+      setMode: (m) => this._setMode(m),
     });
     this.toolbar.loadCityPresets(cityPresets);
     this.toolbar.setMeta(meta);
     this.pen = 'G';
     this._baseOpacity = 1;
+    this._mode = 'painter';
     this._centerLatLng = L.latLng(meta.center_lat, meta.center_lng);
     this._setupMouse();
+    this._setupBrushOutline();
     this._setupResize();
     this._loadDraft();
     this._fitGridToView();
@@ -269,23 +281,76 @@ class MapEditor {
     const onMove = (ev) => {
       const rect = this.canvas.getBoundingClientRect();
       const { r, c } = this.renderer.pixelToCell(ev.clientX - rect.left, ev.clientY - rect.top);
-      if (r < 0 || c < 0 || r >= this.grid.rows || c >= this.grid.cols) return;
-      if (this.grid.get(r, c) !== this.pen) {
-        this.grid.set(r, c, this.pen);
-        // Re-resolve the 3x3 neighborhood: the painted cell changed, and any
-        // neighbor's resolved tile (beach/road/...) depends on its own
-        // neighbors, so a change in one cell can flip a neighbor's variant.
-        this.renderer.redrawAround(r, c);
+      if (r < 0 || c < 0 || r >= this.grid.rows || c >= this.grid.cols) {
+        this._updateBrushOutline(-1, -1);
+        return;
       }
+      this._updateBrushOutline(r, c);
+      if (isPainting) this._paintAt(r, c);
     };
     this.canvas.onmousedown = (ev) => {
+      if (this._mode === 'dragger') return;  // shouldn't fire (pointer-events: none)
       isPainting = true;
       this.history.push(this.grid);
       onMove(ev);
     };
-    this.canvas.onmousemove = (ev) => { if (isPainting) onMove(ev); };
+    this.canvas.onmousemove = (ev) => onMove(ev);
     document.addEventListener('mouseup', () => { isPainting = false; });
-    this.canvas.onmouseleave = () => { isPainting = false; };
+    this.canvas.onmouseleave = () => {
+      isPainting = false;
+      this._updateBrushOutline(-1, -1);
+    };
+  }
+
+  _setupBrushOutline() {
+    const div = document.createElement('div');
+    div.id = 'brush-outline';
+    div.style.cssText = 'position:absolute;pointer-events:none;border:2px dashed rgba(255,255,255,0.85);display:none;z-index:401;box-sizing:border-box;';
+    this.canvas.parentElement.appendChild(div);
+    this._brushOutline = div;
+  }
+
+  _updateBrushOutline(r, c) {
+    if (this._mode !== 'bigger' || r < 0 || c < 0 || r >= this.grid.rows || c >= this.grid.cols) {
+      this._brushOutline.style.display = 'none';
+      return;
+    }
+    const cellSize = this.renderer.cellSize();
+    this._brushOutline.style.width = (6 * cellSize) + 'px';
+    this._brushOutline.style.height = (6 * cellSize) + 'px';
+    this._brushOutline.style.left = ((c - 3) * cellSize) + 'px';
+    this._brushOutline.style.top = ((r - 3) * cellSize) + 'px';
+    this._brushOutline.style.display = 'block';
+  }
+
+  _paintAt(r, c) {
+    if (this._mode === 'bigger') {
+      for (let dr = -3; dr <= 2; dr++) {
+        for (let dc = -3; dc <= 2; dc++) {
+          const nr = r + dr;
+          const nc = c + dc;
+          if (nr < 0 || nr >= this.grid.rows || nc < 0 || nc >= this.grid.cols) continue;
+          if (this.grid.get(nr, nc) !== this.pen) {
+            this.grid.set(nr, nc, this.pen);
+            this.renderer.redrawAround(nr, nc);
+          }
+        }
+      }
+    } else {
+      if (this.grid.get(r, c) !== this.pen) {
+        this.grid.set(r, c, this.pen);
+        this.renderer.redrawAround(r, c);
+      }
+    }
+  }
+
+  _setMode(mode) {
+    this._mode = mode;
+    this.canvas.style.pointerEvents = (mode === 'dragger') ? 'none' : 'auto';
+    this.toolbar.setActiveMode(mode);
+    if (mode !== 'bigger') this._brushOutline.style.display = 'none';
+    const labels = { dragger: '拖动', painter: '画格', bigger: '画 6×6' };
+    this.toolbar.setStatus(`模式: ${labels[mode]}`);
   }
 
   _setupResize() {
