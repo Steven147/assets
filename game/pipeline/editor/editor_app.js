@@ -255,11 +255,13 @@ class MapEditor {
     this.toolbar.setMeta(meta);
     this.pen = 'G';
     this._baseOpacity = 1;
+    this._centerLatLng = L.latLng(meta.center_lat, meta.center_lng);
     this._setupMouse();
     this._setupResize();
     this._loadDraft();
     this._fitGridToView();
     this.renderer.drawAll();
+    this._setupMapSync();
   }
 
   _setupMouse() {
@@ -295,6 +297,18 @@ class MapEditor {
     const rect = this.canvas.getBoundingClientRect();
     const cellSize = Math.max(8, Math.min(48, Math.floor(Math.min(rect.width / this.grid.cols, rect.height / this.grid.rows))));
     this.renderer.setCellSize(cellSize);
+  }
+
+  _setupMapSync() {
+    this.aligner.map.on('move', this._onMapMove.bind(this));
+    this._onMapMove();
+  }
+
+  _onMapMove() {
+    const pt = this.aligner.map.latLngToContainerPoint(this._centerLatLng);
+    const cellSize = this.renderer.cellSize();
+    this.canvas.style.left = (pt.x - this.grid.cols * cellSize / 2) + 'px';
+    this.canvas.style.top = (pt.y - this.grid.rows * cellSize / 2) + 'px';
   }
 
   _undo() {
