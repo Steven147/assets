@@ -248,10 +248,13 @@ class MapEditor {
       export: () => this._export(),
       applyMeta: () => this._applyMeta(),
       applyCity: (name) => this._applyCity(name),
+      syncMeta: () => this._syncMeta(),
+      toggleBaseLayer: () => this._toggleBaseLayer(),
     });
     this.toolbar.loadCityPresets(cityPresets);
     this.toolbar.setMeta(meta);
     this.pen = 'G';
+    this._baseOpacity = 1;
     this._setupMouse();
     this._setupResize();
     this._loadDraft();
@@ -327,6 +330,29 @@ class MapEditor {
       .then(r => r.json().then(j => ({ status: r.status, body: j })))
       .then(({ status, body }) => this.toolbar.setStatus(status === 200 && body.ok ? `已保存: ${body.path}` : `错误: ${body.error || status}`))
       .catch(e => this.toolbar.setStatus(`下载成功,但保存到 input/ 失败: ${e.message}`));
+  }
+  _syncMeta() {
+    const view = this.aligner.getView();
+    // Blur inputs first so focus doesn't fight the value write.
+    ['lat', 'lng', 'span'].forEach(id => document.getElementById(id).blur());
+    this.toolbar.setMeta({
+      ...this.toolbar.getMeta(),
+      center_lat: view.center_lat,
+      center_lng: view.center_lng,
+      span_km: parseFloat(view.span_km.toFixed(1)),
+    });
+    this.toolbar.setStatus(`已同步: ${view.center_lat.toFixed(4)}, ${view.center_lng.toFixed(4)}`);
+  }
+
+  _toggleBaseLayer() {
+    // Cycle 1 → 0.5 → 0 → 1
+    const order = [1, 0.5, 0];
+    const idx = order.indexOf(this._baseOpacity);
+    const next = order[(idx + 1) % order.length];
+    this._baseOpacity = next;
+    this.aligner.setOpacity(next);
+    const labels = { 1: '实', 0.5: '半透', 0: '隐' };
+    this.toolbar.setBaseLayerLabel(labels[next]);
   }
   _applyMeta() {
     const m = this.toolbar.getMeta();
