@@ -4,7 +4,6 @@ We can't unit-test the JS behavior without a browser, but a missing
 button ID is the most common regression and is easy to catch here.
 """
 import http.client
-import os
 import socketserver
 import threading
 import time
@@ -18,7 +17,6 @@ from pipeline.editor.editor_server import (
     find_free_port,
     EditorHandler,
     EDITOR_DIR,
-    GAME_DIR,
 )
 
 
@@ -29,15 +27,6 @@ def server_url(tmp_path_factory):
     meta = resolve_meta(name="htmltest", city="shanghai", rows=3, cols=3)
     write_meta(meta, EDITOR_DIR / "meta.json")
     write_tile_paths_to(EDITOR_DIR / "tile_paths.js")
-
-    # EditorHandler extends SimpleHTTPRequestHandler, which resolves paths
-    # against CWD. The real main() does os.chdir(GAME_DIR); we mirror that
-    # so /pipeline/editor/editor.html resolves correctly.
-    os.chdir(GAME_DIR)
-
-    # SimpleHTTPRequestHandler defaults to HTTP/1.0, which the http.client
-    # keep-alive path mishandles. Promote to HTTP/1.1 for this fixture.
-    EditorHandler.protocol_version = "HTTP/1.1"
 
     port = find_free_port()
     httpd = socketserver.TCPServer(("127.0.0.1", port), EditorHandler)
