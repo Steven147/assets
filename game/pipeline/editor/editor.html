@@ -16,7 +16,13 @@
     }
     #toolbar button.active { background: #4a7aaa; }
     #map { flex: 1; position: relative; }
-    #grid { position: absolute; top: 0; left: 0; pointer-events: auto; z-index: 450; }
+    #grid { position: absolute; top: 0; left: 0; pointer-events: auto; z-index: 400; }
+    /* Let mouse clicks pass through Leaflet's OSM tile/overlay panes to the
+       grid below. The grid is below the OSM tiles in stacking (canvas z=400
+       vs mapPane z=400, but mapPane is later in DOM order = on top), so we
+       need the panes to be transparent to events for paint-clicks to land
+       on the grid. */
+    .leaflet-map-pane { pointer-events: none; }
     #status { position: absolute; bottom: 0; left: 0; right: 0;
               background: rgba(0,0,0,0.7); color: #fff; padding: 4px 8px; font-size: 12px;
               z-index: 500; }
